@@ -1,0 +1,17 @@
+.admin-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 20px;
+    background-color: #34495e;
+    color: #fff;
+  }
+  
+  .admin-header-right .logout-button {
+    background-color: #e74c3c;
+    color: #fff;
+    border: none;
+    padding: 10px 15px;
+    cursor: pointer;
+  }
+  

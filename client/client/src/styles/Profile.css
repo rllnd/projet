@@ -1,0 +1,204 @@
+
+.profile-page{
+  background-color: rgba(37, 81, 122, 0.555);;
+ 
+}
+.profile-page {  
+ display: flex; /* Aligne les éléments */  
+  flex-direction: column; /* En colonne */  
+}  
+.profile-container {  
+  max-width: 600px;  
+  margin: 20px auto;  
+  background-color: #ddd;  
+ 
+  padding: 20px;  
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);  
+  border-radius: 10px;  
+  display: flex; /* Initialise flexbox */  
+  flex-direction: column; /* Alignement en colonne */  
+}  
+
+.profile-header {  
+  display: flex;  
+ text-align: center;
+ align-items: center;
+}  
+.profile-picture {  
+  width: 120px;  
+  height: 120px;  
+  border-radius: 50%;  
+  border: 2px solid #ddd;  
+  object-fit: cover;  
+  margin-right: 100px; 
+  border: 1px solid #fff; 
+  
+ 
+}  
+
+.profile-info h2 {  
+  font-size: 24px;  
+  font-weight: 600;  
+  margin-bottom: 8px;
+  color:#1c2b4a;
+} 
+
+.profile-info a {  
+  color: var(--primary-color);  
+  text-decoration: none;  
+}  
+
+.profile-info p {  
+  margin: 0;  
+  font-size: 16px;  
+  color: #555;  
+}  
+
+.profile-form {  
+  margin-top: 20px;  
+  display: flex;  
+  flex-wrap: wrap;  
+  gap: 20px;  
+ 
+}  
+
+.form-group {  
+  flex: 1 1 calc(50% - 20px); /* Chaque groupe prendra 50% de la largeur */  
+  box-sizing: border-box;  
+  
+}  
+
+
+element.style{
+  margin-left: 155px;
+
+}
+
+.form-group input {  
+  padding: 15px;  
+  border: 1px solid #ddd;  
+  border-radius: 4px;  
+  font-size: 15px;  
+  background-color: #fff;
+  margin-left: 237px; 
+ /* Changer à blanc pour les champs modifiables */  
+}  
+
+@media (max-width: 768px) {  
+  .profile-container {  
+      width: 90%;  
+      padding: 20px;  
+  }  
+
+  .profile-header {  
+      flex-direction: column;  
+      align-items: center;  
+  }  
+
+  .profile-picture {  
+      margin-bottom: 20px;  
+  }  
+
+  .profile-info h2 {  
+      text-align: center;  
+  }  
+
+  .form-group {  
+      flex: 1 1 100%; /* Prend toute la largeur sur mobile */  
+  }  
+}  
+
+/* Ajoutez ces styles à votre fichier Profile.css */  
+
+.form-buttons {  
+  display: flex;  
+  gap: 10px;  
+  margin-top: 20px;  
+}  
+
+.edit-button,  
+.save-button,  
+.cancel-button {  
+  padding: 10px 20px;  
+  border: none;  
+  border-radius: 4px;  
+  cursor: pointer;  
+  font-size: 16px;  
+}  
+
+.edit-button {  
+  background-color:#ff7a45;  
+  color: white;  
+}  
+.edit-button:hover {  
+  background-color:#ff7a45;  
+  color: white;  
+}
+
+.save-button {  
+  background-color:  #1c2b4a;
+  color: white;  
+}
+.save-button:hover {  
+  background-color:  #1c2b4a;
+  color: white;  
+}   
+
+.cancel-button {  
+  background-color: #c04e59;  
+  color: white;  
+}  
+
+.cancel-button:hover {  
+  background-color: #c04e59;  
+  color: white;  
+} 
+input[readOnly] {  
+  background-color: #f9f9f9;  
+  cursor: not-allowed;  
+}  
+
+.nom[type="text" i] {
+  
+  font-weight: bold;
+  color: #1c2b4a;
+  background-color: transparent;
+  border:none;
+}
+.nom1[type="text" i] {
+  
+  font-weight: bold;
+  color: #1c2b4a;
+  background-color: transparent;
+  border:none;
+}
+.nom2[type="text" i] {
+  
+  font-weight: bold;
+  color: #1c2b4a;
+  background-color: transparent;
+  border:none;
+}
+.nom3[type="text" i] {
+  
+  font-weight: bold;
+  color: #1c2b4a;
+  background-color: transparent;
+  border:none;
+}
+.nom4[type="text" i] {
+  
+  font-weight: bold;
+  color: #1c2b4a;
+  background-color: transparent;
+  border:none;
+
+}
+.email[type="email" i] {
+  
+  font-weight: bold;
+  color: #1c2b4a;
+  background-color: transparent;
+  border:none;
+  margin-left: 250px;
+}

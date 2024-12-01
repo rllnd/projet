@@ -1,0 +1,1 @@
+{"name":"enchere","version":"1.0.0","scripts":{"start":"concurrently \"npm run start --prefix client/client\" \"npm run start --prefix backend\"","client":"cd client/client && npm start","backend":"cd backend && npm start"},"devDependencies":{"concurrently":"^9.0.1"},"dependencies":{"date-fns":"^4.1.0"}}

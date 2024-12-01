@@ -1,0 +1,58 @@
+/* client/src/styles/MyAuctions.css */
+.container {
+    padding: 20px;
+  }
+  
+  .mes {
+    color: #33627F;
+    font-weight: bold;
+    margin-bottom: 20px;
+  }
+  
+  .auction-link {
+    color: #33627F;
+    text-decoration: none;
+    font-weight: bold;
+  }
+  
+  .auction-link:hover {
+    text-decoration: underline;
+  }
+  
+  .table {
+    background: #fff;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+  }
+  
+  .table th {
+    background-color: #33627F;
+    color: #fff;
+    text-align: center;
+  }
+  
+  .table td {
+    text-align: center;
+    vertical-align: middle;
+  }
+  
+  .btn-primary {
+    background-color: #1c2b4a;
+    border: none;
+  }
+  
+  .btn-primary:hover {
+    background-color: #3a4e72;
+  }
+  
+  .btn-danger {
+    background-color: #d9534f;
+    border: none;
+  }
+  
+  .btn-danger:hover {
+    background-color: #c9302c;
+  }
+.error{
+      color: #c9302c;
+  }

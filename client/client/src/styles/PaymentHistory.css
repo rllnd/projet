@@ -1,0 +1,25 @@
+/* client/src/styles/PaymentHistory.css */
+.payment-history {
+    padding: 20px;
+    background-color: #f5f6fa;
+  }
+  
+  .payment-history .card {
+    background: #ffffff;
+    border-radius: 10px;
+  }
+  
+  .payment-history .table-dark {
+    background-color: #33627F;
+    color: white;
+  }
+  
+  .payment-history .btn-primary {
+    background-color: #33627F;
+    border: none;
+  }
+  
+  .payment-history .btn-primary:hover {
+    background-color: #2b5470;
+  }
+  

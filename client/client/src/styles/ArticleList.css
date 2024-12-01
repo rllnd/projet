@@ -1,0 +1,94 @@
+/* Styles globaux */  
+.container {  
+  padding: 30px;  
+  max-width: 1200px;  
+  margin: 0 auto;  
+}  
+
+/* Filtrer par catégorie */  
+.category-select {  
+  margin-bottom: 60px;  
+}  
+/* Augmenter la taille du texte pour le label "Filtrer par catégorie" */  
+.category-select label {  
+  font-size: 1.5rem; /* Ajustez la taille selon vos besoins */  
+}
+.category-select select {  
+    font-size: 1.2rem; /* Ajustez la taille selon vos besoins */  
+    padding: 10px; /* Ajoute plus d'espace à l'intérieur du select */  
+    margin-left: 10px;
+} 
+
+/* Grille des produits */  
+.product_grid {  
+  display: flex;  
+  flex-wrap: wrap;  
+  justify-content: space-between; /* Ajouté pour l'espacement */  
+  margin-top: 20px; 
+}  
+
+/* Article produit */  
+.product_item {  
+  background-color: #ffffff;  
+  border-radius: 10px;  
+  transition: transform 0.3s, box-shadow 0.3s;  
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);  
+  text-align: center;  
+   
+  overflow: hidden;  
+  min-height: 380px; 
+  margin-bottom: 20px;  
+}  
+
+/* Image du produit */  
+.product-img {  
+  width: 100%;  
+  height: 200px;  
+  object-fit: cover;  
+  border-top-left-radius: 10px;  
+  border-top-right-radius: 10px;  
+}  
+
+/* Nom du produit */  
+.product_name {  
+  font-size: 1.5rem;  
+  color: #333;  
+  font-weight: 600;  
+  margin: 10px 0;  
+}  
+
+/* Prix du produit */  
+.product_price {  
+  font-size: 1.15rem;  
+  color: #ff5722;  
+  font-weight: 500;  
+  margin: 5px 0;  
+}  
+
+/* Catégorie du produit */  
+.product_category {  
+  font-size: 0.9rem;  
+  color: #888;  
+  margin-bottom: 15px;  
+}  
+
+/* Bouton */  
+.btn-primary {  
+  background-color: #1c2b4a;  
+  border: none;  
+  padding: 10px 20px;  
+  font-size: 1rem;  
+  border-radius: 5px;  
+  transition: background-color 0.3s, transform 0.3s;  
+}  
+
+.btn-primary:hover {  
+  background-color: #3a4e72;  
+  color: #fff;  
+  cursor: pointer;  
+}  
+
+/* Aucune trouvée d'articles */  
+.no-articles {  
+  text-align: center;
+}

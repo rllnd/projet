@@ -1,0 +1,77 @@
+.wallet {
+  padding: 20px;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.wallet-title {
+  font-size: 2rem;
+  text-align: center;
+  margin-bottom: 20px;
+  color: #333;
+}
+
+.card {
+  background-color: #fff;
+  padding: 20px;
+  margin-bottom: 20px;
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.wallet-balance h3, .wallet-withdraw h3, .wallet-transactions h3 {
+  font-size: 1.5rem;
+  margin-bottom: 15px;
+}
+
+.wallet-balance p {
+  font-size: 1.2rem;
+  margin: 5px 0;
+  color: #444;
+}
+
+.withdraw-form input {
+  width: calc(50% - 10px);
+  padding: 10px;
+  margin-right: 10px;
+  margin-bottom: 10px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+}
+
+.withdraw-form button {
+  width: 100%;
+  padding: 10px;
+  background-color: #1d72b8;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.withdraw-form button:hover {
+  background-color: #155a8a;
+}
+
+.wallet-transactions table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+}
+
+.wallet-transactions th, .wallet-transactions td {
+  padding: 10px;
+  border-bottom: 1px solid #ddd;
+  text-align: left;
+  color: #555;
+}
+
+.wallet-transactions th {
+  background-color: #f0f0f0;
+  color: #333;
+}
+
+.wallet-transactions tr:hover {
+  background-color: #f9f9f9;
+}

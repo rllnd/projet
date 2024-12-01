@@ -1,0 +1,229 @@
+.header {
+    width: 100%;
+    background-color: #fff;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+  }
+  
+  .nav__wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 20px;
+  }
+  
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  
+  .logo img {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+  }
+  
+  .logo h1 {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color:  #144869;
+    margin: 0;
+  }
+  
+  .navigation {
+    flex-grow: 1;
+  }
+  
+  .menu {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  
+  .nav__item a {
+    text-decoration: none;
+    color: #555;
+    font-weight: 500;
+    padding: 10px 15px;
+    border-radius: 5px;
+    transition: background-color 0.2s, color 0.2s;
+    
+  }
+  
+  .nav__item a:hover, .nav__active {
+    background-color: #fff;
+    color: rgb(15, 13, 13);
+  }
+  
+  .nav__icons {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+  }
+  
+  .fav__icon, .cart__icon {
+    position: relative;
+    cursor: pointer;
+  }
+  
+  .fav__icon i, .cart__icon i {
+    font-size: 1.5rem;
+    color:  var(--primary-color);
+  }
+  
+  .badge {
+    position: absolute;
+    top: -5px;
+    right: -10px;
+    background-color: #ff3d00;
+    color: #fff;
+    width: 18px;
+    height: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+    border-radius: 50%;
+  }
+  
+  .user-menu-container {
+    position: relative;
+  }
+  
+  .user-icon {
+    cursor: pointer;
+  }
+  
+  .user-icon img {
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+  }
+  
+  .user-menu {
+    position: absolute;
+    top: 110%;
+    right: 0;
+    background-color: #fff;
+    box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
+    border-radius: 5px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    width: 180px;
+    z-index: 10;
+  }
+  
+  .user-menu .dropdown-item {
+    padding: 10px 15px;
+    text-decoration: none;
+    color: #555;
+    transition: background-color 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  
+  .user-menu .dropdown-item:hover {
+    background-color: #f0f0f0;
+  }
+  
+  .auth-buttons {
+    display: flex;
+    gap: 10px;
+  }
+  
+  .btn {
+    background-color:  #0c3a68;
+    color: #fff;
+    padding: 8px 16px;
+    border-radius: 5px;
+    text-decoration: none;
+    font-weight: 500;
+    transition: background-color 0.2s;
+  }
+  
+  .btn:hover {
+    background-color: #0c3a68;
+  }
+  
+  .btn-signup {
+    background-color: #009688;
+  }
+  
+  .btn-signup:hover {
+    background-color: #218838;
+  }
+  
+  .mobile__menu {
+    display: none;
+    font-size: 1.5rem;
+    color: #33627F;
+    cursor: pointer;
+  }
+  
+  .sticky__header {
+    background-color: #fff;
+    box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
+  }
+  
+  @media only screen and (max-width: 768px) {
+    .navigation {
+      display: none;
+    }
+  
+    .active__menu {
+      display: block;
+    }
+  
+    .menu {
+      flex-direction: column;
+      position: absolute;
+      top: 70px;
+      left: 0;
+      background-color: #fff;
+      width: 100%;
+      padding: 20px 0;
+      box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
+      
+    }
+  
+    .nav__item a {
+      padding: 10px 20px;
+    }
+  
+    .mobile__menu {
+      display: block;
+    }
+  }
+  .dashboard__button {
+    display: flex;
+    align-items: center;
+    gap: 10px; /* Espacement entre l'icône et le texte */
+    padding: 12px 24px;
+    color: #fff; /* Texte blanc */
+    font-weight: bold;
+    text-decoration: none;
+    transition: all 0.3s ease;
+   
+}
+
+.dashboard__button:hover {
+    background-color: #ffffff; /* Teal 700 au survol */
+    transform: scale(1.05); /* Zoom léger au survol */
+}
+
+.dashboard-icon {
+    width: 44px;
+    height: 44px;
+    filter: brightness(1.2); /* Éclaircir légèrement l'icône */
+}
+
+
+  

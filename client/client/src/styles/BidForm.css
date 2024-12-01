@@ -1,0 +1,50 @@
+/* client/src/styles/ArticleDetail.css */
+.bid-form {
+    background: #fff;
+    padding: 1px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  .bid-options {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .bid-option {
+    display: flex;
+    gap: 10px;
+  }
+  
+  .bid-input {
+    flex: 1;
+    padding: 8px;
+    border-radius: 5px;
+    border: 1px solid #ddd;
+  }
+  
+  .bid-btn {
+    padding: 8px 12px;
+    border-radius: 5px;
+    cursor: pointer;
+    border: none;
+    font-size: 0.9rem;
+  }
+  
+  .manual-bid-btn {
+    background-color: #1c2b4a;
+    color: #fff;
+  }
+  
+  .auto-bid-btn {
+    background-color: #ff7a45;
+    color: #fff;
+  }
+  
+  .tokens, .user-tokens {
+    margin-top: 10px;
+    font-size: 0.9rem;
+    color: #666;
+  }
+  

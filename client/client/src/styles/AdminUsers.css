@@ -1,0 +1,33 @@
+.admin-users {
+    margin-top: 20px;
+  }
+  
+  .admin-users table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  
+  .admin-users table th,
+  .admin-users table td {
+    border: 1px solid #ddd;
+    padding: 20px;
+    text-align: left;
+  }
+  
+  .admin-users table th {
+    background-color: #34495e;
+    color: white;
+  }
+  
+  .admin-users table td button {
+    background-color: #3498db;
+    color: #fff;
+    border: none;
+    padding: 5px 10px;
+    cursor: pointer;
+  }
+  
+  .admin-users table td button:last-child {
+    background-color: #e74c3c;
+  }
+  

@@ -1,0 +1,53 @@
+/* Fond de la page */
+.login-container {
+  background-size: cover;
+  height: 80vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: rgba(37, 81, 122, 0.555);
+}
+.login-box {
+  background: rgba(11, 37, 70, 0.733);
+  color: rgb(226, 226, 226);
+  border-radius: 20px;
+  padding: 20px;
+  width: 350px;
+  text-align: center;
+  box-shadow: 0 10px 30px rgba(13, 75, 133, 0.1);
+}
+.login-container input {
+  width: 80%;
+  padding: 20px;
+  margin: 10px 0;
+  border-radius: 8px;
+  border: 1px solid rgba(37, 81, 122, 0.555);
+}
+
+p {
+  font-size: 14px;
+  color: rgb(255, 255, 255);
+  margin-bottom: 20px;
+}
+
+.login button {
+  width: 80%;
+  padding: 20px;
+  background-color: #28a745;
+  padding: 20px;
+  color: rgb(255, 255, 255);
+  cursor: pointer;
+  font-weight: 600;
+  margin-top: 5px;
+  border-radius: 8px;
+  text-size-adjust: 50px;
+  border: none;
+}
+
+.ins button {
+  background-color: var(--primary-color);
+  color: rgb(244, 248, 252);
+  border: none;
+  margin-top: 10px;
+  cursor: pointer;
+}

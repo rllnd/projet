@@ -1,0 +1,44 @@
+.about-us {
+    padding: 40px;
+    font-family: Arial, sans-serif;
+    color: #333;
+    max-width: 800px;
+    margin: auto;
+}
+
+.about-us__intro, 
+.about-us__guide, 
+.about-us__image, 
+.about-us__contact {
+    margin-bottom: 30px;
+}
+
+.about-us h1, 
+.about-us h2 {
+    color: #ff7a45;
+    font-weight: bold;
+    margin-bottom: 15px;
+}
+
+.about-us__guide h3 {
+    color: #333;
+    font-weight: bold;
+    margin-top: 20px;
+}
+
+.about-us__platform-image {
+    width: 100%;
+    max-width: 800px;
+    margin-top: 15px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.about-us__contact a {
+    color: #ff7a45;
+    text-decoration: none;
+}
+
+.about-us__contact a:hover {
+    text-decoration: underline;
+}

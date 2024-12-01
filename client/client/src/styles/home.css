@@ -1,0 +1,364 @@
+.hero__section {
+    display: flex;
+    align-items: center; /* Centre verticalement le texte et l'image */
+    justify-content: center; /* Sépare le texte et l'image */
+    padding: 30px 0;
+    background-color: #e9f2ff;
+    flex-wrap: nowrap; /* Empêche l'image de passer en dessous du texte */
+  }
+  
+  .hero__content {
+    flex: 1;
+    padding: 10px;
+    text-align: left;
+    min-width: 300px;
+  }
+  
+  .hero__content h2 {
+    font-size: 2.2rem;
+    font-weight: 700;
+    color: #1c2b4a;
+    margin-bottom: 15px;
+  }
+  
+  .hero__content p {
+    font-size: 1.1rem;
+    color: #666;
+    margin-bottom: 5px;
+    line-height: 1.8;
+  }
+  
+  .buy__btn {
+    border: none;
+    outline: none;
+    border-radius: 5px;
+    padding: 10px 20px;
+    background: #1c2b4a;
+    color: #fff;
+    cursor: pointer;
+    font-size: 1rem;
+    margin-top: 20px;
+    transition: background 0.3s ease;
+  }
+  
+  .buy__btn:hover {
+    background: #3a4e72;
+  }
+  
+  .buy__btn a {
+    text-decoration: none;
+    color: #fff;
+  }
+  
+  .hero__image {
+    flex: 0 0 100%; /* Réduit la taille pour pousser l'image plus loin à droite */
+    display: flex;
+    justify-content:flex-start; /* Aligne l'image à droite */
+    margin-top: -260px; /* Ajuste la hauteur de l'image */
+    margin-left: 820px; /* Ajuste la position de l'image pour la pousser encore plus à droite */
+  
+}
+  
+  .hero__image img {
+    width: 500px; /* Ajuste la taille de l'image */
+    max-width: 600px; /* Taille maximale pour l'image */
+    height: auto;
+    box-shadow: 0px 5px 20px rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
+    
+  }
+  
+  /* Comportement pour petits écrans */
+  @media (max-width: 768px) {
+    .hero__section {
+      flex-direction: column; /* Sur petits écrans, le texte passe au-dessus de l'image */
+      align-items: center;
+      text-align: center;
+    }
+  
+    .hero__image {
+      justify-content: center; /* Centre l'image sur petits écrans */
+      margin-top: 20px; /* Ajuste l'espace entre le texte et l'image */
+      margin-left: 0; /* Supprime le décalage à gauche sur les petits écrans */
+    }
+  }
+  @media (max-width: 992px) {
+    .hero__section {
+      flex-direction: column; /* Sur petits écrans, le texte passe au-dessus de l'image */
+      align-items: center;
+      text-align: center;
+    }
+  
+    .hero__image {
+      justify-content: center; /* Centre l'image sur petits écrans */
+      margin-top: 20px; /* Ajuste l'espace entre le texte et l'image */
+      margin-left: 0; /* Supprime le décalage à gauche sur les petits écrans */
+    }
+  }
+  @media only screen and (max-width:576px){
+    .hero__content{
+        padding-top: 0;
+        margin-bottom: 40px;
+    }
+}
+  /* Trending Products */
+  .trending__products,
+  .enchre_cours {
+    padding: 30px 0;
+    background: #fff;
+  }
+  
+  .section__title {
+    font-size: 2rem;
+    font-weight: 600;
+    margin-bottom: 30px;
+    color: #333;
+    text-align: center;
+  }
+  
+  /* Product Card Styles */
+  .product-card {
+    background: #fff;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
+    overflow: hidden;
+    transition: transform 0.2s ease-in-out;
+  }
+  
+  .product-card:hover {
+    transform: translateY(-5px);
+  }
+  
+  .product-image {
+    width: 100%;
+    height: 200px;
+    background: #f5f5f5;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  .product-image img {
+    max-width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .product-details {
+    padding: 20px;
+  }
+  
+  .product-details h3 {
+    font-size: 1.5rem;
+    font-weight: 500;
+    color: #333;
+    margin-bottom: 10px;
+  }
+  
+  .product-details p {
+    font-size: 0.9rem;
+    color: #666;
+    margin-bottom: 15px;
+  }
+  
+  .product-details .price {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: #ff7a45;
+    margin-bottom: 10px;
+  }
+  
+  .product-details .view-btn {
+    display: inline-block;
+    background-color: #ff7a45;
+    color: #fff;
+    padding: 8px 20px;
+    border-radius: 20px;
+    text-decoration: none;
+    transition: background-color 0.3s ease;
+  }
+  
+  .product-details .view-btn:hover {
+    background-color: #e46939;
+  }
+  
+  /* Product Grid Layout */
+  .product-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px;
+    margin-top: 20px;
+  }
+  
+  /* Empty State Placeholder */
+  .product-placeholder {
+    width: 100%;
+    height: 200px;
+    background: #e0e0e0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 10px;
+  }
+  
+  .product-placeholder p {
+    color: #999;
+    font-size: 1rem;
+  }
+  
+  /* Mobile Responsive Styles */
+  @media (max-width: 768px) {
+    .hero__content h2 {
+      font-size: 2rem;
+    }
+  
+    .product-grid {
+      grid-template-columns: 1fr;
+    }
+  
+    .product-details h3 {
+      font-size: 1.2rem;
+    }
+  
+    .product-details .price {
+      font-size: 1rem;
+    }
+  }
+  
+  .how-it-works {
+    padding: 60px 0;
+    background-color:#fff;
+    color:  #1c1c1c;
+  }
+  
+  .section__title {
+    font-weight: bold;
+   
+    margin-bottom: 20px;
+    font-size: 2rem;
+  }
+  
+  .how-it-works-description {
+    color: #bbb;
+    margin-bottom: 40px;
+  }
+  
+  /* Style Flex pour les étapes */
+  .how-it-works-steps {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    gap: 20px;
+  }
+  
+  .step {
+    text-align: center;
+    color: #fff;
+    max-width: 250px;
+    position: relative;
+  }
+  
+  .step-circle {
+    width: 60px;
+    height: 60px;
+    background-color: #029e9d;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    font-weight: bold;
+    font-size: 24px;
+    margin: 0 auto 15px;
+  }
+  
+  .step-title {
+    color: #1c1c1c;
+    font-weight: bold;
+    font-size: 1.2rem;
+    margin-top: 0;
+  }
+  
+  .step-description {
+    color:#1c1c1c;
+    font-size: 0.95rem;
+  }
+  
+  /* Ligne pointillée entre les étapes */
+  .step:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    top: 30px;
+    right: -100px;
+    width: 80px;
+    height: 1px;
+    border-top: 1px dashed #1c1c1c;
+  }
+  
+  .step:nth-child(2)::after {
+    right: -100px;
+  }
+  
+  @media (max-width: 768px) {
+    /* Ajustement pour petits écrans */
+    .how-it-works-steps {
+      flex-direction: column;
+    }
+  
+    .step:not(:last-child)::after {
+      display: none;
+    }
+  }
+  .faq-section {
+    padding: 60px 0;
+    background-color: #f9f9f9;
+  }
+  
+  .section__title {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 20px;
+  }
+  
+  .faq-accordion .faq-item {
+    margin-bottom: 10px;
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1px solid #ddd;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  .faq-accordion .accordion-button {
+    background-color: #ffffff;
+    color: #333;
+    font-weight: bold;
+    border: none;
+    padding: 15px 20px;
+    border-radius: 10px;
+    transition: background-color 0.3s ease;
+  }
+  
+  .faq-accordion .accordion-button:not(.collapsed) {
+    background-color: #029e9d;
+    color: #ffffff;
+    border-radius: 10px;
+    font-size: 1rem;
+  }
+  
+  .faq-accordion .accordion-body {
+    padding: 15px 20px;
+    color: #666;
+    font-size: 0.95rem;
+    background-color: #ffffff;
+    border-top: 1px solid #ddd;
+  }
+  
+  .faq-accordion .accordion-header {
+    font-size: 1.1rem;
+  }
+  
+  .faq-accordion .accordion-button::after {
+    font-size: 1.2rem;
+    color: #029e9d;
+  }
+  
