@@ -225,5 +225,10 @@
     filter: brightness(1.2); /* Éclaircir légèrement l'icône */
 }
 
+@media only screen and (max-width: 576px) {
 
+  .auth-buttons .btn-signup {
+    display: none; /* Cache le bouton Signup */
+  }
+}
   

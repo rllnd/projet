@@ -2,9 +2,12 @@
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import HomePage from '../pages/HomePage';
+import ForgotPassword from '../pages/ForgotPassword';
+import ResetPassword from '../pages/ResetPassword';
 import LoginPage from '../pages/LoginPage';
 import ActivateAccount  from '../pages/ActivateAccount';
 import SignupPage from '../pages/SignupPage';
+import Contacts from '../pages/Contacts';
 import ProfilePage from '../pages/ProfilePage';
 import Sellerboard from '../pages/seller/Sellerboard';
 import BuyerDashboard from '../pages/buyer/BuyerDashboard';
@@ -28,6 +31,9 @@ import CreerArticle from '../pages/seller/CreerArticle';
 import SellerArticles from '../pages/seller/SellerArticles';
 import EncheresEnCours from '../pages/buyer/EncheresEnCours';
 import Overview from '../pages/buyer/Overview';
+import MesEncheresSuivies from "../pages/MesEncheresSuivies";
+
+
 const ProtectedRoute = ({ children, role }) => {
   const { user } = useAuth();
   if (!user) {
@@ -44,8 +50,13 @@ const AppRoutes = () => (
 
     {/* Routes publiques */}
     <Route path="/HomePage" element={ <Layout><HomePage /></Layout>} />
+    <Route path="/mes-encheres-suivies" element={<Layout><MesEncheresSuivies/></Layout>} />
+
     <Route path="/login" element={<Layout1><LoginPage/></Layout1>} />
+    <Route path="/forgot-password" element={<Layout1><ForgotPassword/></Layout1>} />
+    <Route path="/reset-password/:token" element={<Layout1><ResetPassword/></Layout1>} />
     <Route path="/signup" element={<Layout1><SignupPage /></Layout1>} />
+    <Route path="/contacts" element={<Layout><Contacts /></Layout>} />
    {/*} {<Route path="/profile" element={<Layout><ProfilePage/></Layout>} />}{*/}
     <Route path="/articles" element={<Layout><ArticleList /></Layout>} />
     <Route path="/articles/:id" element={<Layout> <ArticleDetail/></Layout>}/>
@@ -60,7 +71,7 @@ const AppRoutes = () => (
     <Route path="/seller-dashboard" element={<BidProvider><Sellerboard/></BidProvider> } />
     <Route path="/admin-dashboard" element={<BidProvider><Dashboard/></BidProvider> } />
     <Route path="/about" element={<Layout><About/></Layout> } />
-    <Route path="/Wallet" element={<Layout><Wallet/></Layout> } />
+    <Route path="/Wallet" element={<Wallet/>} />
     <Route path="/creer-article" element={<Layout><CreerArticle/></Layout> } />  
     <Route path="/dashboard/seller/articles" element={<SellerArticles />} />
     <Route path="/activate-account" element={<Layout1><ActivateAccount /></Layout1>} />

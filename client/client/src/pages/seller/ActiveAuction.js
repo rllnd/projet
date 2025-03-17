@@ -12,8 +12,12 @@ import {
   Chip,
   Box,
   useMediaQuery,
+  Avatar,
+  TablePagination,
 } from '@mui/material';
-import { teal, grey } from '@mui/material/colors';
+import { teal, grey, blue } from '@mui/material/colors';
+import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
+import { useSocket } from '../../contexts/SocketContext'; // ✅ Import WebSocket
 
 const CountdownTimer = ({ endDate }) => {
   const [timeLeft, setTimeLeft] = useState(calculateTimeLeft());
@@ -56,12 +60,79 @@ const CountdownTimer = ({ endDate }) => {
 
 const ActiveAuctions = () => {
   const [activeAuctions, setActiveAuctions] = useState([]);
-  const isMobile = useMediaQuery('(max-width:600px)'); // Détecte les écrans de petite taille
-
+  const [page, setPage] = useState(0); // Page actuelle
+  const [rowsPerPage, setRowsPerPage] = useState(5); // Nombre de lignes par page
+  const isMobile = useMediaQuery('(max-width:600px)');
+  const socket = useSocket(); // ✅ WebSocket
+  
   useEffect(() => {
     fetchActiveAuctions();
-  }, []);
+    if (socket) {
+      socket.on("bid-updated", (updatedAuction) => {
+        console.log("🔼 Mise à jour d'enchère en temps réel :", updatedAuction);
+        setActiveAuctions((prev) =>
+          prev.map((auction) =>
+            auction.id === updatedAuction.auctionId
+              ? {
+                  ...auction,
+                  currentHighestBid: updatedAuction.currentHighestBid,
+                  highestBidder: updatedAuction.highestBidderId
+                    ? {
+                        id: updatedAuction.highestBidderId,
+                        name: updatedAuction.highestBidderName,
+                        bidAmount: updatedAuction.currentHighestBid,
+                      }
+                    : null,
+                }
+              : auction
+          )
+        );
+      });
 
+      socket.on("auto-bid-placed", (updatedAuction) => {
+        console.log("⚡ Enchère automatique placée en temps réel :", updatedAuction);
+        setActiveAuctions((prev) => {
+          return prev.map((auction) =>
+            auction.id === updatedAuction.auctionId
+              ? {
+                  ...auction,
+                  currentHighestBid: updatedAuction.currentHighestBid,
+                  highestBidder: {
+                    id: updatedAuction.highestBidderId,
+                    name: updatedAuction.highestBidderName,
+                    bidAmount: updatedAuction.currentHighestBid,
+                  },
+                }
+              : auction
+          );
+        });
+      });
+
+      socket.on("auction-stopped", (stoppedAuction) => {
+        console.log("🛑 Enchère stoppée en temps réel :", stoppedAuction.id);
+        setActiveAuctions((prev) => prev.filter((auction) => auction.id !== stoppedAuction.id));
+      });
+
+      socket.on("auction-cancelled", (cancelledAuction) => {
+        console.log("🚫 Enchère annulée en temps réel :", cancelledAuction.id);
+        setActiveAuctions((prev) => prev.filter((auction) => auction.id !== cancelledAuction.id));
+      });
+
+      socket.on("auction-ended", (endedAuction) => {
+        console.log("🛑 Enchère stoppée en temps réel :", endedAuction.id);
+        setActiveAuctions((prev) => prev.filter((auction) => auction.id !== endedAuction.id));
+      });
+
+      return () => {
+        socket.off("bid-updated");
+        socket.off("auction-stopped");
+        socket.off("auction-cancelled");
+        socket.off("auction-ended");
+        socket.off("auto-bid-placed");
+      };
+    }
+  }, [socket]);
+  
   const fetchActiveAuctions = async () => {
     try {
       const token = localStorage.getItem('authToken');
@@ -72,6 +143,15 @@ const ActiveAuctions = () => {
     } catch (error) {
       console.error('Erreur lors de la récupération des enchères actives :', error);
     }
+  };
+
+  const handleChangePage = (event, newPage) => {
+    setPage(newPage);
+  };
+
+  const handleChangeRowsPerPage = (event) => {
+    setRowsPerPage(parseInt(event.target.value, 10));
+    setPage(0); // Réinitialise la page à 0 lors du changement de lignes par page
   };
 
   return (
@@ -90,26 +170,17 @@ const ActiveAuctions = () => {
       </Typography>
       <Table
         sx={{
-          tableLayout: isMobile ? 'auto' : 'fixed', // Table auto pour mobile
+          tableLayout: isMobile ? 'auto' : 'fixed',
           '& th': {
-            backgroundColor: teal[700], // Couleur d'en-tête
-            color: 'white', // Couleur du texte dans l'en-tête
+            backgroundColor: teal[700],
+            color: 'white',
             fontWeight: 'bold',
             textAlign: 'center',
           },
           '& td': {
-            color: grey[800], // Couleur du texte dans les cellules
+            color: grey[800],
             textAlign: 'center',
-            wordWrap: 'break-word', // Permet le retour à la ligne dans les petites cellules
-          },
-          '& tr:nth-of-type(odd)': {
-            backgroundColor: grey[100], // Fond des lignes impaires
-          },
-          '& tr:nth-of-type(even)': {
-            backgroundColor: 'white', // Fond des lignes paires
-          },
-          '& tr:hover': {
-            backgroundColor: teal[50], // Effet au survol
+            wordWrap: 'break-word',
           },
         }}
       >
@@ -119,7 +190,7 @@ const ActiveAuctions = () => {
             <TableCell>Prix Actuel</TableCell>
             <TableCell>Catégorie</TableCell>
             <TableCell>Temps Restant</TableCell>
-            <TableCell>Acheteurs</TableCell>
+            <TableCell>Plus Haut Enchérisseur</TableCell>
             <TableCell>Statut</TableCell>
           </TableRow>
         </TableHead>
@@ -127,77 +198,95 @@ const ActiveAuctions = () => {
           {activeAuctions.length === 0 ? (
             <TableRow>
               <TableCell colSpan={6} align="center">
-                <Typography color="textSecondary">Aucune enchère active pour le moment.</Typography>
+                <Typography color="textSecondary">
+                  Aucune enchère active pour le moment.
+                </Typography>
               </TableCell>
             </TableRow>
           ) : (
-            activeAuctions.map((auction) => (
-              <TableRow
-                key={auction.id}
-                sx={{
-                  '&:nth-of-type(odd)': {
-                    backgroundColor: grey[100],
-                  },
-                  '&:nth-of-type(even)': {
-                    backgroundColor: 'white',
-                  },
-                  '&:hover': {
-                    backgroundColor: teal[50],
-                  },
-                }}
-              >
-                <TableCell>{auction.articleDetails?.name || 'Nom non disponible'}</TableCell>
-                <TableCell>{auction.currentHighestBid || 0} GTC</TableCell>
-                <TableCell>{auction.articleDetails?.category || 'Catégorie non disponible'}</TableCell>
-                <TableCell>
-                  <CountdownTimer endDate={auction.endDate} />
-                </TableCell>
-                <TableCell>
-                  {Array.isArray(auction.bids) && auction.bids.length > 0 ? (
-                    <Box
-                      sx={{
-                        display: 'flex',
-                        flexWrap: 'wrap',
-                        justifyContent: 'center',
-                        gap: '4px',
-                        maxWidth: isMobile ? '150px' : '300px',
-                        overflowX: 'auto',
-                      }}
-                    >
-                      {auction.bids.map((bid, index) => (
-                        <Chip
-                          key={index}
-                          label={`${bid.bidder?.name || 'Acheteur inconnu'} (${bid.amount || 0} GTC)`}
-                          sx={{
-                            margin: '4px',
-                            backgroundColor: teal[300],
-                            color: 'white',
-                            fontWeight: 'bold',
-                          }}
+            activeAuctions
+              .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+              .map((auction) => (
+                <TableRow key={auction.id}>
+                  <TableCell>{auction.articleDetails?.name || 'Nom non disponible'}</TableCell>
+                  <TableCell>{auction.currentHighestBid || 0} GTC</TableCell>
+                  <TableCell>{auction.articleDetails?.category || 'Catégorie non disponible'}</TableCell>
+                  <TableCell>
+                    <CountdownTimer endDate={auction.endDate} />
+                  </TableCell>
+                  <TableCell>
+                    {auction.highestBidder && auction.highestBidder.name ? (
+                      <Box 
+                        sx={{ 
+                          display: 'flex', 
+                          flexDirection: 'column', 
+                          alignItems: 'center',
+                          gap: 1 
+                        }}
+                      >
+                        <Box sx={{ position: 'relative' }}>
+                          <Avatar 
+                            sx={{ 
+                              width: 56, 
+                              height: 56, 
+                              bgcolor: blue[500],
+                              border: `3px solid ${teal[500]}` 
+                            }}
+                          >
+                            {auction.highestBidder.name?.charAt(0).toUpperCase()}
+                          </Avatar>
+                          <EmojiEventsIcon 
+                            sx={{ 
+                              position: 'absolute', 
+                              bottom: -5, 
+                              right: -5, 
+                              color: teal[700],
+                              backgroundColor: 'white',
+                              borderRadius: '50%'
+                            }} 
+                          />
+                        </Box>
+                        <Typography variant="subtitle2" sx={{ fontWeight: 'bold' }}>
+                          {auction.highestBidder.name}
+                        </Typography>
+                        <Chip 
+                          label={`${auction.highestBidder?.bidAmount || auction.currentHighestBid} GTC`}  
+                          color="primary" 
+                          size="small" 
                         />
-                      ))}
-                    </Box>
-                  ) : (
-                    <Typography variant="body2" color="textSecondary">
-                      Aucun acheteur
-                    </Typography>
-                  )}
-                </TableCell>
-                <TableCell>
-                  <Chip
-                    label={auction.status === 'open' ? 'En cours' : 'Terminé'}
-                    sx={{
-                      backgroundColor: auction.status === 'open' ? teal[500] : grey[500],
-                      color: 'white',
-                      fontWeight: 'bold',
-                    }}
-                  />
-                </TableCell>
-              </TableRow>
-            ))
+                      </Box>
+                    ) : (
+                      <Typography variant="body2" color="textSecondary">
+                        Aucun enchérisseur
+                      </Typography>
+                    )}
+                  </TableCell>
+
+                  <TableCell>
+                    <Chip
+                      label={auction.status === 'open' ? 'En cours' : 'Terminé'}
+                      sx={{
+                        backgroundColor: auction.status === 'open' ? teal[500] : grey[500],
+                        color: 'white',
+                        fontWeight: 'bold',
+                      }}
+                    />
+                  </TableCell>
+                </TableRow>
+              ))
           )}
         </TableBody>
       </Table>
+
+      <TablePagination
+        rowsPerPageOptions={[4, 8, 16]} // Options pour le nombre de lignes par page
+        component="div"
+        count={activeAuctions.length} // Nombre total d'enchères
+        rowsPerPage={rowsPerPage} // Nombre de lignes par page
+        page={page} // Page actuelle
+        onPageChange={handleChangePage} // Gestionnaire de changement de page
+        onRowsPerPageChange={handleChangeRowsPerPage} // Gestionnaire de changement de lignes par page
+      />
     </TableContainer>
   );
 };

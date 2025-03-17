@@ -1,21 +1,23 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Paper,
   Typography,
   CircularProgress,
+  useMediaQuery,
 } from '@mui/material';
-import { teal, grey, red } from '@mui/material/colors';
+import { Table, Input, Pagination, Space, Tag } from 'antd';
+import { SearchOutlined } from '@ant-design/icons';
+import { teal, red } from '@mui/material/colors';
 
 const CancelledAuctionsList = () => {
   const [cancelledAuctions, setCancelledAuctions] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [searchText, setSearchText] = useState('');
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+
+  // Détecter les écrans mobiles
+  const isMobile = useMediaQuery('(max-width:600px)');
 
   useEffect(() => {
     fetchCancelledAuctions();
@@ -35,52 +37,137 @@ const CancelledAuctionsList = () => {
     }
   };
 
+  // Recherche dans les enchères annulées
+  const filteredAuctions = cancelledAuctions.filter((auction) =>
+    auction.articleDetails?.name.toLowerCase().includes(searchText.toLowerCase())
+  );
+
+  // Colonnes du tableau pour les écrans larges
+  const fullColumns = [
+    {
+      title: 'Article',
+      dataIndex: 'articleName',
+      key: 'articleName',
+      render: (_, auction) => (
+        <Typography sx={{ fontWeight: 'bold' }}>
+          {auction.articleDetails?.name || 'Non disponible'}
+        </Typography>
+      ),
+    },
+    {
+      title: 'Catégorie',
+      dataIndex: 'category',
+      key: 'category',
+      render: (_, auction) => auction.articleDetails?.category?.name || 'Non disponible',
+    },
+    {
+      title: 'Prix ',
+      dataIndex: 'price',
+      key: 'price',
+      render: (_, auction) => `${auction.articleDetails?.price || 0} GTC`,
+    },
+    {
+      title: 'Prix du départ',
+      dataIndex: 'startprice',
+      key: 'startprice',
+      render: (_, auction) => auction.articleDetails?.startprice|| 'Prix inconnu',
+    },
+    {
+      title: 'Raison',
+      dataIndex: 'cancellationReason',
+      key: 'cancellationReason',
+      render: (reason) => (
+        <Tag color={red[500]}>{reason || 'Non spécifiée'}</Tag>
+      ),
+    },
+    {
+      title: 'Date d\'annulation',
+      dataIndex: 'updatedAt',
+      key: 'updatedAt',
+      render: (date) => new Date(date).toLocaleString(),
+    },
+  ];
+
+  // Colonnes pour les petits écrans
+  const mobileColumns = [
+    {
+      title: 'Article',
+      dataIndex: 'articleName',
+      key: 'articleName',
+      render: (_, auction) => (
+        <Typography sx={{ fontWeight: 'bold' }}>
+          {auction.articleDetails?.name || 'Non disponible'}
+        </Typography>
+      ),
+    },
+    {
+      title: 'Prix',
+      dataIndex: 'price',
+      key: 'price',
+      render: (_, auction) => `${auction.articleDetails?.price || 0} GTC`,
+    },
+    {
+      title: 'Raison',
+      dataIndex: 'cancellationReason',
+      key: 'cancellationReason',
+      render: (reason) => (
+        <Tag color={red[500]}>{reason || 'Non spécifiée'}</Tag>
+      ),
+    },
+    
+  ];
+
   return (
-    <Paper sx={{ maxWidth: '90%', margin: 'auto', padding: '1rem', backgroundColor: grey[100] }}>
-      <Typography variant="h5" align="center" gutterBottom color={teal[700]}>
+    <div style={{ padding: '1rem' }}>
+      <Typography
+        variant={isMobile ? 'h5' : 'h4'}
+        align="center"
+        gutterBottom
+        style={{ color: teal[700] }}
+      >
         Enchères Annulées
       </Typography>
+
+      <Space style={{ marginBottom: 16, width: '100%' }} direction="vertical">
+        <Input
+          placeholder="Rechercher un article"
+          prefix={<SearchOutlined />}
+          value={searchText}
+          onChange={(e) => setSearchText(e.target.value)}
+          style={{ maxWidth: isMobile ? '100%' : '50%' }}
+        />
+      </Space>
+
       {loading ? (
-        <CircularProgress color="primary" style={{ display: 'block', margin: 'auto' }} />
-      ) : cancelledAuctions.length === 0 ? (
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh' }}>
+          <CircularProgress color="primary" />
+        </div>
+      ) : filteredAuctions.length === 0 ? (
         <Typography color="textSecondary" align="center">
           Aucune enchère annulée disponible.
         </Typography>
       ) : (
-        <TableContainer>
-          <Table>
-            <TableHead>
-              <TableRow sx={{ backgroundColor: teal[500] }}>
-                <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Article</TableCell>
-                <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Catégorie</TableCell>
-                <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Prix</TableCell>
-                <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Vendeur</TableCell>
-                <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Raison d'annulation</TableCell>
-                <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Date d'annulation</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {cancelledAuctions.map((auction) => (
-                <TableRow key={auction.id} sx={{ '&:hover': { backgroundColor: grey[200] } }}>
-                  <TableCell>{auction.articleDetails?.name || 'Non disponible'}</TableCell>
-                  <TableCell>{auction.articleDetails?.category || 'Non disponible'}</TableCell>
-                  <TableCell>{auction.articleDetails?.price || 0} GTC</TableCell>
-                  <TableCell>
-                    {auction.articleDetails?.seller?.name || 'Vendeur inconnu'}
-                  </TableCell>
-                  <TableCell sx={{ color: red[500], fontWeight: 'bold' }}>
-                    {auction.cancellationReason || 'Non spécifiée'}
-                  </TableCell>
-                  <TableCell>
-                    {new Date(auction.updatedAt).toLocaleString()}
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
+        <>
+          <Table
+            columns={isMobile ? mobileColumns : fullColumns}
+            dataSource={filteredAuctions.slice((page - 1) * pageSize, page * pageSize)}
+            rowKey="id"
+            pagination={false}
+            bordered
+          />
+          <Pagination
+            current={page}
+            pageSize={pageSize}
+            total={filteredAuctions.length}
+            onChange={(page, pageSize) => {
+              setPage(page);
+              setPageSize(pageSize);
+            }}
+            style={{ marginTop: 16, textAlign: 'center' }}
+          />
+        </>
       )}
-    </Paper>
+    </div>
   );
 };
 

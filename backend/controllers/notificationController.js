@@ -1,5 +1,5 @@
 const Notification = require('../models/Notifications');
-
+const { getIO } = require('../config/socket');
 // Récupérer les notifications pour un utilisateur
 exports.getUserNotifications = async (req, res) => {
   try {
@@ -56,4 +56,5 @@ exports.getUnreadNotificationCount = async (req, res) => {
       console.error('Erreur lors de la création de la notification :', error);
     }
   };
-      
+    
+

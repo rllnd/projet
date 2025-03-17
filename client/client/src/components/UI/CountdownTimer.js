@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { ClockCircleOutlined } from '@ant-design/icons';
 
 const CountdownTimer = ({ endDate }) => {
   const calculateTimeLeft = () => {
@@ -26,21 +27,34 @@ const CountdownTimer = ({ endDate }) => {
   }, [endDate]);
 
   if (!timeLeft) {
-    return <p style={{ color: 'red', fontWeight: 'bold' }}>Temps écoulé !</p>;
+    return (
+      <div style={{ display: 'flex', alignItems: 'center', color: '#ff4d4f', fontWeight: 'bold' }}>
+        <ClockCircleOutlined style={{ marginRight: '5px' }} />
+        <span>Temps écoulé</span>
+      </div>
+    );
   }
 
   const isCritical = timeLeft.minutes < 1 && timeLeft.hours === 0;
 
   return (
-    <div style={{ color: isCritical ? 'red' : '#333', fontWeight: 'bold' }}>
-      Temps restant :
-      {timeLeft.days > 0 && ` ${timeLeft.days}j`}
-      {timeLeft.hours > 0 && ` ${timeLeft.hours}h`}
-      {timeLeft.minutes > 0 && ` ${timeLeft.minutes}m`}
-      {timeLeft.seconds}s
+    <div
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        color: isCritical ? '#ff4d4f' : '#1c2b4a',
+        fontWeight: 'bold',
+      }}
+    >
+      <ClockCircleOutlined style={{ marginRight: '5px' }} />
+      <span>
+        {timeLeft.days > 0 && `${timeLeft.days}j `}
+        {timeLeft.hours > 0 && `${timeLeft.hours}h `}
+        {timeLeft.minutes > 0 && `${timeLeft.minutes}m `}
+        {timeLeft.seconds}s
+      </span>
     </div>
   );
 };
-
 
 export default CountdownTimer;

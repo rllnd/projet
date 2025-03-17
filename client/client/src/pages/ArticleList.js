@@ -18,7 +18,7 @@ const ArticleList = () => {
               setArticles(response.data);
               setFilteredArticles(response.data);
           
-              const uniqueCategories = ['all', ...new Set(response.data.map((article) => article.category))];  
+              const uniqueCategories = ['all', ...new Set(response.data.map((article) => article.category?.name ))];  
               setCategories(uniqueCategories);
             } catch (error) {
               console.error("Erreur lors de la récupération des articles publiés :", error);
@@ -36,7 +36,7 @@ const ArticleList = () => {
         if (selectedCategory === 'all') {  
             setFilteredArticles(articles);  
         } else {  
-            const filtered = articles.filter(article => article.category === selectedCategory);  
+            const filtered = articles.filter(article => article.category?.name  === selectedCategory);  
             setFilteredArticles(filtered);  
         }  
     };  
@@ -65,7 +65,7 @@ const ArticleList = () => {
                                 <Card.Body className="d-flex flex-column">  
                                     <Card.Title className="product_name">{article.name}</Card.Title>  
                                     <Card.Text className="product_price">Prix : {article.price} GTC</Card.Text>  
-                                    <Card.Text className="product_category text-muted">Catégorie : {article.category}</Card.Text>  
+                                    <Card.Text className="product_category text-muted">Catégorie : {article.category?.name }</Card.Text>  
                                     <div className="mt-auto">  
                                         <Link to={`/articles/${article.id}`}>  
                                             <button className="btn btn-primary">Voir détails</button>  

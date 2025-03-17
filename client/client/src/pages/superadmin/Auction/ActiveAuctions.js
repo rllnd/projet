@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import Swal from 'sweetalert2';
+import { useSocket } from '../../../contexts/SocketContext';
 import {
   Table,
   TableBody,
@@ -10,20 +12,124 @@ import {
   Paper,
   Typography,
   Chip,
-  Button,
+  IconButton,
+  Tooltip,
+  TextField,
+  MenuItem,
+  Pagination,
+  Box,
+  Grid,
+  useMediaQuery,
 } from '@mui/material';
-import { teal, grey } from '@mui/material/colors';
-import CancelAuctionDialog from './CancelAuctionDialog'; // Modale pour annulation d'une enchère
+import { teal, grey, red } from '@mui/material/colors';
+import StopIcon from '@mui/icons-material/PauseCircle';
+import CancelIcon from '@mui/icons-material/Cancel';
 
 const ActiveAuctions = ({ isAdmin = true }) => {
   const [auctions, setAuctions] = useState([]);
-  const [openCancelDialog, setOpenCancelDialog] = useState(false);
-  const [selectedAuctionId, setSelectedAuctionId] = useState(null);
 
-  // Charger les enchères
+  const [filteredAuctions, setFilteredAuctions] = useState([]);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filterStatus, setFilterStatus] = useState('');
+  const [page, setPage] = useState(1);
+  const rowsPerPage = 5;
+  const isSmallScreen = useMediaQuery('(max-width:600px)');
+  const socket = useSocket(); // ✅ Utilisation du WebSocket
+
   useEffect(() => {
+    console.log("📡 Données reçues pour les enchères :", auctions);
     fetchAuctions();
-  }, []);
+
+    if (socket) {
+
+      socket.on("bid-updated", (updatedAuction) => {
+        console.log("🔄 Enchère mise à jour en temps réel :", updatedAuction);
+
+        setAuctions((prev) => {
+          return prev.map((auction) =>
+            auction.id === updatedAuction.auctionId
+              ? {
+                ...auction,
+                currentHighestBid: updatedAuction.currentHighestBid,
+                highestBidder: updatedAuction.highestBidderId
+                  ? {
+                    id: updatedAuction.highestBidderId,
+                    name: updatedAuction.highestBidderName,
+                    bidAmount: updatedAuction.currentHighestBid,
+                  }
+                  : auction.highestBidder, // ✅ Garder la dernière valeur si pas de mise
+              }
+              : auction
+          );
+        });
+      });
+
+
+      // 🔥 Mise à jour lors d'une enchère automatique (Auto-Bid)
+      socket.on("auto-bid-placed", (updatedAuction) => {
+        console.log("⚡ Enchère automatique placée en temps réel :", updatedAuction);
+
+        setAuctions((prev) => {
+          const updatedList = prev.map((auction) =>
+            auction.id === updatedAuction.auctionId
+              ? {
+                ...auction,
+                currentHighestBid: updatedAuction.currentHighestBid,
+                highestBidder: {
+                  id: updatedAuction.highestBidderId,
+                  name: updatedAuction.highestBidderName,
+                  bidAmount: updatedAuction.currentHighestBid,
+                },
+              }
+              : auction
+          );
+
+          console.log("🔄 Nouvel état des enchères après auto-bid :", updatedList);
+          return updatedList;
+        });
+      });
+
+
+      // 🔥 Écoute des enchères stoppées en temps réel
+      socket.on("auction-stopped", (stoppedAuction) => {
+        console.log("🛑 Enchère stoppée en temps réel :", stoppedAuction.id);
+        setAuctions((prev) =>
+          prev.map((auction) =>
+            auction.id === stoppedAuction.id ? { ...auction, status: "closed" } : auction
+          )
+        );
+      });
+
+
+      // 🔥 Écoute des enchères annulées en temps réel
+      socket.on("auction-cancelled", (cancelledAuction) => {
+        console.log("🚫 Enchère annulée en temps réel :", cancelledAuction.id);
+        setAuctions((prev) => prev.filter((auction) => auction.id !== cancelledAuction.id));
+      });
+
+      
+
+      socket.on("auction-ended", (endedAuction) => {
+        console.log("🔴 Enchère terminée :", endedAuction.id);
+        setAuctions((prev) => prev.filter((auction) => auction.id !== endedAuction.id));
+        fetchAuctions();
+      });
+      
+      
+
+      return () => {
+        socket.off("auction-stopped");
+        socket.off("auction-cancelled");
+        socket.off("bid-updated");
+        socket.off("auto-bid-placed");
+        socket.off("auction-ended");
+      };
+    }
+  }, [socket]);
+
+  useEffect(() => {
+    filterAuctions();
+  }, [searchTerm, filterStatus, auctions]);
 
   const fetchAuctions = async () => {
     try {
@@ -34,153 +140,232 @@ const ActiveAuctions = ({ isAdmin = true }) => {
           : 'http://localhost:5000/api/auctions/active',
         { headers: { Authorization: `Bearer ${token}` } }
       );
+      console.log("✅ Enchères récupérées depuis le backend :", response.data);
+
+
       setAuctions(response.data);
     } catch (error) {
-      if (error.response?.status === 403) {
-        alert('Accès refusé : vous devez être administrateur pour accéder à cette section.');
-      } else {
-        console.error('Erreur lors de la récupération des enchères actives :', error);
+      console.error('Erreur lors de la récupération des enchères actives :', error);
+    }
+  };
+
+
+  const filterAuctions = () => {
+    let updatedAuctions = [...auctions];
+
+    if (searchTerm) {
+      updatedAuctions = updatedAuctions.filter((auction) =>
+        auction.articleDetails?.name?.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+
+    if (filterStatus) {
+      updatedAuctions = updatedAuctions.filter((auction) => auction.status === filterStatus);
+    }
+
+    setFilteredAuctions(updatedAuctions);
+  };
+
+  const paginatedAuctions = filteredAuctions.slice(
+    (page - 1) * rowsPerPage,
+    page * rowsPerPage
+  );
+
+  const handlePageChange = (event, value) => {
+    setPage(value);
+  };
+
+  const handleStopAuction = async (auctionId) => {
+    const result = await Swal.fire({
+      title: 'Êtes-vous sûr ?',
+      text: 'Vous êtes sur le point de stopper cette enchère. Cette action est irréversible.',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: teal[500],
+      cancelButtonColor: red[500],
+      confirmButtonText: 'Oui, stopper',
+      cancelButtonText: 'Annuler',
+    });
+
+    if (result.isConfirmed) {
+      try {
+        const token = localStorage.getItem('token');
+        await axios.put(`http://localhost:5000/api/auctions/stop/${auctionId}`, {}, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        await fetchAuctions();
+        // 🔥 WebSocket : Informer tous les clients en temps réel
+        socket.emit("auction-stopped", { id: auctionId });
+
+        Swal.fire('Succès', 'Enchère arrêtée avec succès.', 'success');
+      } catch (error) {
+        console.error("Erreur lors de l'arrêt de l'enchère :", error);
+        Swal.fire('Erreur', "Impossible d'arrêter l'enchère.", 'error');
       }
     }
   };
 
-  // Stopper une enchère
-  const handleStopAuction = async (auctionId) => {
-    try {
-      const token = localStorage.getItem('token');
-      await axios.put(`http://localhost:5000/api/superadmin/auctions/stop/${auctionId}`, {}, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      fetchAuctions();
-      alert('Enchère arrêtée avec succès.');
-    } catch (error) {
-      console.error("Erreur lors de l'arrêt de l'enchère :", error);
-      alert('Échec de l\'arrêt de l\'enchère.');
+  const handleCancelAuction = async (auctionId) => {
+    const { value: reason } = await Swal.fire({
+      title: 'Annuler l’enchère',
+      input: 'textarea',
+      inputLabel: 'Raison de l’annulation',
+      inputPlaceholder: 'Entrez la raison ici...',
+      inputAttributes: {
+        'aria-label': 'Raison de l’annulation',
+      },
+      showCancelButton: true,
+      confirmButtonColor: teal[500],
+      cancelButtonColor: red[500],
+      confirmButtonText: 'Soumettre',
+      cancelButtonText: 'Annuler',
+    });
+
+    if (reason) {
+      try {
+        const token = localStorage.getItem('token');
+        await axios.put(
+          `http://localhost:5000/api/superadmin/auctions/cancel/${auctionId}`,
+          { reason },
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        await fetchAuctions();
+        // 🔥 WebSocket : Informer tous les clients en temps réel
+        socket.emit("auction-cancelled", { id: auctionId });
+
+        Swal.fire('Succès', 'Enchère annulée avec succès.', 'success');
+      } catch (error) {
+        console.error("Erreur lors de l'annulation de l'enchère :", error);
+        Swal.fire('Erreur', "Impossible d'annuler l'enchère.", 'error');
+      }
     }
   };
-
-  // Gérer l'ouverture de la modale d'annulation
-  const handleCancelClick = (auctionId) => {
-    setSelectedAuctionId(auctionId);
-    setOpenCancelDialog(true);
-  };
-
-  // Confirmer l'annulation
-  const handleConfirmCancel = async (reason, additionalComment) => {
-    setOpenCancelDialog(false);
-    if (!selectedAuctionId) return;
-  
-    try {
-      const token = localStorage.getItem('token');
-      await axios.put(
-        `http://localhost:5000/api/superadmin/auctions/cancel/${selectedAuctionId}`,
-        { reason, additionalComment },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      fetchAuctions(); // Recharge les enchères après annulation
-      alert('Enchère annulée avec succès.');
-    } catch (error) {
-      console.error('Erreur lors de l\'annulation de l\'enchère :', error);
-      alert('Échec de l\'annulation de l\'enchère.');
-    }
-  };
-  
 
   return (
-    <>
-      <TableContainer component={Paper} sx={{ maxWidth: '90%', margin: 'auto', marginBottom: '2rem' }}>
-        <Typography variant="h4" align="center" gutterBottom color={teal[700]}>
-          {isAdmin ? 'Toutes les Enchères Actives' : 'Mes Enchères Actives'}
-        </Typography>
+    <Box sx={{ padding: isSmallScreen ? 2 : 4 }}>
+      <Typography variant="h4" align="center" gutterBottom sx={{ color: teal[700] }}>
+        {isAdmin ? 'Toutes les Enchères Actives' : 'Mes Enchères Actives'}
+      </Typography>
+
+      <Box sx={{ display: 'flex', flexDirection: isSmallScreen ? 'column' : 'row', gap: 2, marginBottom: 3 }}>
+        <TextField
+          label="Rechercher par titre"
+          variant="outlined"
+          size="small"
+          fullWidth
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+        />
+        <TextField
+          label="Statut"
+          select
+          variant="outlined"
+          size="small"
+          fullWidth
+          value={filterStatus}
+          onChange={(e) => setFilterStatus(e.target.value)}
+        >
+          <MenuItem value="">Tous</MenuItem>
+          <MenuItem value="open">En cours</MenuItem>
+          <MenuItem value="closed">Arrêté</MenuItem>
+        </TextField>
+      </Box>
+
+      <TableContainer component={Paper} sx={{ maxWidth: '100%', margin: 'auto', boxShadow: 3 }}>
         <Table>
           <TableHead>
-            <TableRow sx={{ backgroundColor: teal[500] }}>
+            <TableRow sx={{ backgroundColor: teal[700] }}>
               <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Titre</TableCell>
               <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Prix Actuel</TableCell>
-              <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Catégorie</TableCell>
-              {isAdmin && <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Vendeur</TableCell>}
-              <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Acheteurs</TableCell>
+              {!isSmallScreen && isAdmin && (
+                <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Vendeur</TableCell>
+              )}
+              {!isSmallScreen && (
+                <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Acheteurs</TableCell>
+              )}
               <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Statut</TableCell>
-              {isAdmin && <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Actions</TableCell>}
+              {isAdmin && (
+                <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Actions</TableCell>
+              )}
             </TableRow>
           </TableHead>
           <TableBody>
-            {auctions.length === 0 ? (
+            {paginatedAuctions.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={isAdmin ? 7 : 6} align="center">
+                <TableCell colSpan={isAdmin ? 5 : 4} align="center">
                   <Typography color="textSecondary">Aucune enchère active pour le moment.</Typography>
                 </TableCell>
               </TableRow>
             ) : (
-              auctions.map((auction) => (
-                <TableRow key={auction.id}>
-                  <TableCell>{auction.articleDetails?.name || 'Non disponible'}</TableCell>
-                  <TableCell>{auction.currentHighestBid || 0} GTC</TableCell>
-                  <TableCell>{auction.articleDetails?.category || 'Non disponible'}</TableCell>
-                  {isAdmin && (
-                    <TableCell>
-                      {auction.articleDetails?.seller?.name || 'Vendeur inconnu'}
-                    </TableCell>
-                  )}
-                  <TableCell>
-                    {auction.bids?.length > 0 ? (
-                      auction.bids.map((bid, index) => (
-                        <Chip
-                          key={index}
-                          label={`${bid.bidderName || 'Acheteur inconnu'} (${bid.amount || 0} GTC)`}
-                          sx={{ margin: '0 4px 4px 0' }}
-                          color="success"
-                        />
-                      ))
-                    ) : (
-                      <Typography variant="body2" color="textSecondary">
-                        Aucun acheteur
-                      </Typography>
+                paginatedAuctions.map((auction) => (
+                  <TableRow key={auction.id}>
+                    <TableCell>{auction.articleDetails?.name || 'Non disponible'}</TableCell>
+                    <TableCell>{auction.currentHighestBid || 0} GTC</TableCell>
+                    {!isSmallScreen && isAdmin && (
+
+                      <TableCell>
+                        {auction.articleDetails?.seller
+                          ? `${auction.articleDetails.seller.name} ( ${auction.articleDetails.seller.email})`
+                          : 'Vendeur inconnu'}
+                      </TableCell>
+
+
                     )}
-                  </TableCell>
-                  <TableCell>
-                    <Chip
-                      label={auction.status === 'open' ? 'En cours' : 'Terminé'}
-                      sx={{
-                        backgroundColor: auction.status === 'open' ? teal[500] : grey[500],
-                        color: 'white',
-                        fontWeight: 'bold',
-                      }}
-                    />
-                  </TableCell>
-                  {isAdmin && (
+                    {!isSmallScreen && (
+                      <TableCell>
+                        {auction.highestBidder ? (
+                          <Chip
+                            label={`${auction.highestBidder.name} (ID: ${auction.highestBidder.id})`}
+                            sx={{ backgroundColor: teal[500], color: 'white' }}
+                          />
+                        ) : (
+                            <Typography variant="body2" color="textSecondary">
+                              Aucun enchérisseur
+                            </Typography>
+                          )}
+                      </TableCell>
+
+
+                    )}
                     <TableCell>
-                      <Button
-                        variant="contained"
-                        color="error"
-                        size="small"
-                        sx={{ marginRight: 1 }}
-                        onClick={() => handleStopAuction(auction.id)}
-                      >
-                        Stopper
-                      </Button>
-                      <Button
-                        variant="contained"
-                        color="warning"
-                        size="small"
-                        onClick={() => handleCancelClick(auction.id)}
-                      >
-                        Annuler
-                      </Button>
+                      <Chip
+                        label={auction.status === 'open' ? 'En cours' : 'Terminé'}
+                        sx={{
+                          backgroundColor: auction.status === 'open' ? teal[500] : grey[500],
+                          color: 'white',
+                        }}
+                      />
                     </TableCell>
-                  )}
-                </TableRow>
-              ))
-            )}
+                    {isAdmin && (
+                      <TableCell>
+                        <Tooltip title="Stopper l'enchère">
+                          <IconButton onClick={() => handleStopAuction(auction.id)} sx={{ color: red[500] }}>
+                            <StopIcon />
+                          </IconButton>
+                        </Tooltip>
+                        <Tooltip title="Annuler l'enchère">
+                          <IconButton onClick={() => handleCancelAuction(auction.id)} sx={{ color: grey[700] }}>
+                            <CancelIcon />
+                          </IconButton>
+                        </Tooltip>
+                      </TableCell>
+                    )}
+                  </TableRow>
+                ))
+              )}
           </TableBody>
         </Table>
       </TableContainer>
-      <CancelAuctionDialog
-        open={openCancelDialog}
-        onClose={() => setOpenCancelDialog(false)}
-        onConfirm={handleConfirmCancel}
-      />
-    </>
+
+      <Box sx={{ display: 'flex', justifyContent: 'center', marginTop: 3 }}>
+        <Pagination
+          count={Math.ceil(filteredAuctions.length / rowsPerPage)}
+          page={page}
+          onChange={handlePageChange}
+          color="primary"
+        />
+      </Box>
+    </Box>
   );
 };
 

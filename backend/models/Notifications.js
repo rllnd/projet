@@ -1,7 +1,6 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/db'); // Votre configuration Sequelize
 const User = require('./User'); // Le modèle User
-
 const Notification = sequelize.define('Notification', {
   userId: {
     type: DataTypes.INTEGER,
@@ -11,6 +10,7 @@ const Notification = sequelize.define('Notification', {
       key: 'id',
     },
   },
+  
   message: {
     type: DataTypes.STRING,
     allowNull: false,

@@ -1,14 +1,30 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { TextField, Button, Typography, Grid, Box, Container, Paper } from '@mui/material';
+import { useSocket } from '../../contexts/SocketContext'; // Importer WebSocket
+
+import {
+  Typography,
+  Grid,
+  Box,
+  TextField,
+  MenuItem,
+  useMediaQuery,
+  Paper,
+} from '@mui/material';
+import { Button, Upload, message, Form, Select } from 'antd';
+import { UploadOutlined } from '@ant-design/icons';
 import { styled } from '@mui/system';
 import { blue, teal } from '@mui/material/colors';
 
-const StyledContainer = styled(Container)(({ theme }) => ({
+const StyledContainer = styled(Box)(({ theme }) => ({
   backgroundColor: blue[50],
   padding: theme.spacing(4),
   borderRadius: theme.shape.borderRadius,
   boxShadow: theme.shadows[5],
+  marginTop: theme.spacing(5),
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center', // Centre horizontalement
 }));
 
 const StyledButton = styled(Button)(({ theme }) => ({
@@ -17,175 +33,241 @@ const StyledButton = styled(Button)(({ theme }) => ({
   '&:hover': {
     backgroundColor: teal[700],
   },
-  padding: theme.spacing(1.5),
   fontWeight: 'bold',
-  minWidth: 200,
   borderRadius: '8px',
 }));
 
 const CreateArticleForm = () => {
-  const [name, setName] = useState('');
-  const [category, setCategory] = useState('');
-  const [startingPrice, setStartingPrice] = useState('');
-  const [shortDesc, setShortDesc] = useState('');
-  const [fullDesc, setFullDesc] = useState('');
-  const [imgFile, setImgFile] = useState(null); 
-  const [imgPreview, setImgPreview] = useState(null);
-  const [endDate, setEndDate] = useState('');
-  const [galleryFiles, setGalleryFiles] = useState([]); 
-  const [galleryPreviews, setGalleryPreviews] = useState([]);
+  const [form] = Form.useForm();
+  const [categories, setCategories] = useState([]);
+  const isMobile = useMediaQuery('(max-width:600px)');
+  const socket = useSocket(); // Initialiser WebSocket
 
-  const handleImgChange = (e) => {
-    const file = e.target.files[0];
-    setImgFile(file);
-    setImgPreview(URL.createObjectURL(file));
-  };
-
-  const handleGalleryChange = (e) => {
-    const files = Array.from(e.target.files);
-    setGalleryFiles(files);
-    setGalleryPreviews(files.map((file) => URL.createObjectURL(file)));
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
-    const formData = new FormData();
-      formData.append('name', name);
-      formData.append('category', category);
-      formData.append('price', parseFloat(startingPrice));
-      formData.append('shortDesc', shortDesc);
-      formData.append('fullDesc', fullDesc);
-      formData.append('endDate', endDate);
-      if (imgFile) formData.append('imgFile', imgFile); // imgFile
-      galleryFiles.forEach((file, index) => {
-        formData.append('galleryFiles', file); // galleryFiles[]
-      });
-
-    try {
-              const token = localStorage.getItem('authToken');
-              await axios.post('http://localhost:5000/api/articles/create', formData, {
-                headers: {
-                  'Content-Type': 'multipart/form-data',
-                  Authorization: `Bearer ${token}`, // Assurez-vous que `token` est défini
-          },
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const token = localStorage.getItem('authToken');
+        const response = await axios.get('http://localhost:5000/api/list', {
+          headers: { Authorization: `Bearer ${token}` },
         });
+        setCategories(response.data);
+      } catch (error) {
+        message.error('Erreur lors de la récupération des catégories.');
+      }
+    };
+    fetchCategories();
+  }, []);
 
+  const handleSubmit = async (values) => {
+    const formData = new FormData();
+  
+    // Ajouter les données texte et fichiers au FormData
+    Object.entries(values).forEach(([key, value]) => {
+      if (key === 'imgFile' && value) {
+        formData.append('imgFile', value.originFileObj);
+      } else if (key === 'galleryFiles' && value) {
+        value.forEach((file) => {
+          formData.append('galleryFiles', file.originFileObj);
+        });
+      } else if (value !== undefined) {
+        formData.append(key, value);
+      }
+    });
+  
+    // Afficher le contenu de FormData pour déboguer
+    for (let pair of formData.entries()) {
+      console.log(`${pair[0]}:`, pair[1]);
+    }
+  
+    try {
+      const token = localStorage.getItem('authToken');
+      const response = await axios.post('http://localhost:5000/api/articles/create', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      const newArticle = response.data;
       
-      alert('Article créé avec succès !');
+      // Émettre un événement WebSocket après création de l’article
+      if (socket) {
+        console.log("🟢 Émission WebSocket : create-article", newArticle);
+        socket.emit("create-article", newArticle);
+      }
+
+      message.success('Article créé avec succès !');
+      form.resetFields();
     } catch (error) {
-      console.error("Erreur lors de la création de l'article :", error);
-      alert("Échec de la création de l'article.");
+      console.error("Erreur lors de la création de l'article :", error.response?.data || error);
+      message.error(error.response?.data.message || "Échec de la création de l'article.");
     }
   };
+  
 
   return (
-    <StyledContainer maxWidth="md" sx={{ mt: 5 }}>
-      <Typography variant="h4" align="center" gutterBottom color="teal">
-        <strong>Créer un nouvel article d'enchère</strong>
-      </Typography>
-      <Box component="form" onSubmit={handleSubmit} sx={{ mt: 3 }}>
-        <Grid container spacing={4}>
-          <Grid item xs={12} md={6}>
-            <TextField
-              label="Nom de l'article"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              required
-              fullWidth
-              variant="outlined"
-            />
-          </Grid>
-          <Grid item xs={12} md={6}>
-            <TextField
-              label="Catégorie"
-              value={category}
-              onChange={(e) => setCategory(e.target.value)}
-              required
-              fullWidth
-              variant="outlined"
-            />
-          </Grid>
-          <Grid item xs={12} md={6}>
-            <TextField
-              label="Prix de départ"
-              type="number"
-              value={startingPrice}
-              onChange={(e) => setStartingPrice(e.target.value)}
-              required
-              fullWidth
-              variant="outlined"
-            />
-          </Grid>
-          <Grid item xs={12} md={6}>
-            <TextField
-              label="Date de fin de l'enchère"
-              type="date"
-              value={endDate}
-              onChange={(e) => setEndDate(e.target.value)}
-              required
-              fullWidth
-              InputLabelProps={{
-                shrink: true,
-              }}
-              variant="outlined"
-            />
-          </Grid>
-          <Grid item xs={12} md={6}>
-            <TextField
-              label="Description courte"
-              value={shortDesc}
-              onChange={(e) => setShortDesc(e.target.value)}
-              required
-              multiline
-              rows={2}
-              fullWidth
-              variant="outlined"
-            />
-          </Grid>
-          <Grid item xs={12} md={6}>
-            <TextField
-              label="Description complète"
-              value={fullDesc}
-              onChange={(e) => setFullDesc(e.target.value)}
-              required
-              multiline
-              rows={4}
-              fullWidth
-              variant="outlined"
-            />
-          </Grid>
-          <Grid item xs={12} md={6}>
-            <Typography variant="subtitle1">Image principale (JPG/PNG)</Typography>
-            <input type="file" onChange={handleImgChange} accept="image/*" />
-            {imgPreview && (
-              <Paper variant="outlined" sx={{ mt: 2, p: 1, textAlign: 'center' }}>
-                <img src={imgPreview} alt="Preview" style={{ width: '100%', borderRadius: 5 }} />
-              </Paper>
-            )}
-          </Grid>
-          <Grid item xs={12} md={6}>
-            <Typography variant="subtitle1">Galerie d'images (max 5)</Typography>
-            <input type="file" multiple onChange={handleGalleryChange} accept="image/*" />
-            <Box display="flex" flexWrap="wrap" gap={1} mt={2}>
-              {galleryPreviews.map((preview, index) => (
-                <img
-                  key={index}
-                  src={preview}
-                  alt={`Gallery Preview ${index + 1}`}
-                  style={{ width: '48%', height: 'auto', borderRadius: 5 }}
+    <Grid container justifyContent="center" alignItems="center" style={{ minHeight: '100vh' }}>
+      <StyledContainer maxWidth={isMobile ? 'sm' : 'md'}>
+        <Typography variant="h4" align="center" gutterBottom color="teal">
+          <strong>Créer un nouvel article d'enchère</strong>
+        </Typography>
+
+        <Form
+          form={form}
+          layout="vertical"
+          onFinish={handleSubmit}
+          initialValues={{ categoryId: '', startPrice: '', endDate: '' }}
+        >
+          <Grid container spacing={4}>
+            <Grid item xs={12} md={6}>
+              <Form.Item
+                name="name"
+                label="Nom de l'article"
+                rules={[{ required: true, message: 'Veuillez entrer un nom.' }]}
+              >
+                <TextField fullWidth variant="outlined" placeholder="Nom de l'article" />
+              </Form.Item>
+            </Grid>
+
+            <Grid item xs={12} md={6}>
+              <Form.Item
+                name="categoryId"
+                label="Catégorie"
+                rules={[{ required: true, message: 'Veuillez sélectionner une catégorie.' }]}
+              >
+                <Select placeholder="Sélectionnez une catégorie">
+                  {categories.map((category) => (
+                    <Select.Option key={category.id} value={category.id}>
+                      {category.name}
+                    </Select.Option>
+                  ))}
+                </Select>
+              </Form.Item>
+            </Grid>
+
+            <Grid item xs={12} md={6}>
+              <Form.Item
+                name="startPrice"
+                label="Prix de départ"
+                rules={[{ required: true, message: 'Veuillez entrer un prix.' }]}
+              >
+                <TextField
+                  fullWidth
+                  type="number"
+                  variant="outlined"
+                  placeholder="Prix de départ"
                 />
-              ))}
-            </Box>
+              </Form.Item>
+            </Grid>
+
+            <Grid item xs={12} md={6}>
+              <Form.Item
+                name="endDate"
+                label="Date de fin de l'enchère"
+                rules={[{ required: true, message: 'Veuillez entrer une date de fin.' }]}
+              >
+                <TextField
+                  fullWidth
+                  type="date"
+                  variant="outlined"
+                  InputLabelProps={{
+                    shrink: true,
+                  }}
+                />
+              </Form.Item>
+            </Grid>
+
+            <Grid item xs={12} md={6}>
+              <Form.Item
+                name="shortDesc"
+                label="Description courte"
+                rules={[{ required: true, message: 'Veuillez entrer une description courte.' }]}
+              >
+                <TextField
+                  fullWidth
+                  multiline
+                  rows={2}
+                  variant="outlined"
+                  placeholder="Description courte"
+                />
+              </Form.Item>
+            </Grid>
+
+            <Grid item xs={12} md={6}>
+              <Form.Item
+                name="fullDesc"
+                label="Description complète"
+                rules={[{ required: true, message: 'Veuillez entrer une description complète.' }]}
+              >
+                <TextField
+                  fullWidth
+                  multiline
+                  rows={4}
+                  variant="outlined"
+                  placeholder="Description complète"
+                />
+              </Form.Item>
+            </Grid>
+
+            <Grid item xs={12} md={6}>
+              <Form.Item
+                name="imgFile"
+                label="Image principale (JPG/PNG)"
+                rules={[{ required: true, message: "L'image principale est obligatoire." }]}
+              >
+                <Upload
+                  listType="picture"
+                  maxCount={1}
+                  beforeUpload={() => false}
+                  onChange={(info) => {
+                    const file = info.fileList[0];
+                    form.setFieldsValue({ imgFile: file });
+                  }}
+                >
+                  <Button icon={<UploadOutlined />}>Télécharger</Button>
+                </Upload>
+              </Form.Item>
+            </Grid>
+
+            <Grid item xs={12} md={6}>
+              <Form.Item
+                name="galleryFiles"
+                label="Galerie d'images (max 10)"
+                rules={[
+                  {
+                    validator: (_, value) => {
+                      if (!value || !value.fileList) {
+                        return Promise.resolve(); // Pas de fichier téléchargé, validation réussie
+                      }
+                      if (value.fileList.length > 10) {
+                        return Promise.reject(new Error('La galerie ne peut contenir que 10 images maximum.'));
+                      }
+                      return Promise.resolve();
+                    },
+                  },
+                ]}
+              >
+                <Upload
+                  listType="picture"
+                  multiple
+                  beforeUpload={() => false}
+                  onChange={(info) => {
+                    form.setFieldsValue({ galleryFiles: info.fileList });
+                  }}
+                >
+                  <Button icon={<UploadOutlined />}>Télécharger</Button>
+                </Upload>
+              </Form.Item>
+            </Grid>
           </Grid>
-        </Grid>
-        <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
-          <StyledButton variant="contained" type="submit">
-            Créer l'article
-          </StyledButton>
-        </Box>
-      </Box>
-    </StyledContainer>
+
+          <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+            <StyledButton type="primary" htmlType="submit">
+              Créer l'article
+            </StyledButton>
+          </Box>
+        </Form>
+      </StyledContainer>
+    </Grid>
   );
 };
 

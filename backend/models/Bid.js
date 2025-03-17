@@ -34,6 +34,16 @@ const Bid = sequelize.define('Bid', {
     allowNull: false,
     defaultValue: false, // False pour les enchères manuelles
   },
+  reserved: {
+    type: DataTypes.BOOLEAN,
+    allowNull: false,
+    defaultValue: false, // Indique si les fonds sont réservés pour l'enchère
+  },
+  refunded: {
+    type: DataTypes.BOOLEAN,
+    allowNull: false,
+    defaultValue: false, // Par défaut, l'enchère n'est pas remboursée
+  },
 }, {
   tableName: 'bids',
   timestamps: true,

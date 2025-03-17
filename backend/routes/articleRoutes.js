@@ -6,6 +6,7 @@ const multer = require('multer');
 const { protect } = require('../middleware/authMiddleware'); // Importer `protect`
 const Article = require('../models/Article');
 const User = require('../models/User');
+const auditLogger = require('../middleware/auditLogger');
 
 // Configuration de Multer pour gérer les fichiers
 const storage = multer.diskStorage({
@@ -24,7 +25,7 @@ router.post(
     protect,// Ce middleware doit être appelé avant l'action de création
     upload.fields([
       { name: 'imgFile', maxCount: 1 },
-      { name: 'galleryFiles', maxCount: 5 },
+      { name: 'galleryFiles', maxCount: 10 },
     ]),
     articleController.createArticle
   );
@@ -107,7 +108,16 @@ router.post('/bids', async (req, res) => {
   }
 });
 
+// Route pour rejeter un article avec une raison
+router.put('/:articleId/reject', protect,auditLogger, articleController.rejectArticle);
+//Route pour approuver un article 
+router.put('/:id/approve', protect, auditLogger,articleController.approveArticle);
+//route pour publier un article
+router.put('/:articleId/publish', protect, auditLogger,  articleController.publishArticle);
 
+
+// Route pour récupérer les enchères suivies par un utilisateur
+router.get('/user/followed-auctions', protect,articleController.getFollowedAuctions); // Exemple de route pour les enchères suivies
 
 
 module.exports = router;

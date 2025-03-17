@@ -1,5 +1,5 @@
 const express = require('express');
-const { registerUser, loginUser, getProfile, updateProfile, verifyActivationCode,resendActivationCode,getTokenBalance,logoutUser, } = require('../controllers/userController'); // Importer les fonctions depuis userController
+const { registerUser, loginUser, getProfile, updateProfile, verifyActivationCode,resendActivationCode,getTokenBalance,logoutUser,forgotPassword, resetPassword } = require('../controllers/userController'); // Importer les fonctions depuis userController
 const { protect } = require('../middleware/authMiddleware'); // Si tu utilises un middleware pour protéger les routes
 const router = express.Router();
 const multer = require('multer');
@@ -37,6 +37,12 @@ router.post('/activate-account', verifyActivationCode);
 router.get('/token-balance', protect, getTokenBalance);
 // Route pour la déconnexion
 router.post('/logout', logoutUser);
+
+// Route pour demander un lien de réinitialisation de mot de passe
+router.post('/forgot-password', forgotPassword);
+
+// Route pour réinitialiser le mot de passe
+router.post('/reset-password', resetPassword);
 
 
 module.exports = router;

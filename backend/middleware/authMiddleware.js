@@ -12,7 +12,7 @@ const protect = async (req, res, next) => {
       // Vérifiez si l'utilisateur est un administrateur
       const admin = await Admin.findByPk(decoded.id);
       if (admin) {
-        req.user = { id: admin.id, role: admin.role, isAdmin: true };
+        req.user = { id_admin: admin.id_admin, role: admin.role, isAdmin: true };
         return next();
       }
 

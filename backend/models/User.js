@@ -5,6 +5,14 @@ const User = sequelize.define('User', {
   name: {
     type: DataTypes.STRING,
     allowNull: false,
+    },
+  firstName: {  // Ajout du champ Prénom
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+  lastName: {  // Ajout du champ Nom
+    type: DataTypes.STRING,
+    allowNull: false,
   },
   email: {
     type: DataTypes.STRING,
@@ -19,35 +27,63 @@ const User = sequelize.define('User', {
     type: DataTypes.STRING,
     allowNull: false,
     validate: {
-      isIn: [['buyer', 'seller']], // Limite les valeurs acceptées à "buyer" ou "seller"
+      isIn: [['buyer', 'seller']],
     },
   },
   phone: {
     type: DataTypes.STRING,
-    allowNull: true, // Optionnel
+    allowNull: true,
   },
   profilePicture: {
     type: DataTypes.STRING,
-    allowNull: true, // Optionnel
+    allowNull: true,
   },
   tokenBalance: {
     type: DataTypes.FLOAT,
     allowNull: false,
-    defaultValue: 0, // Solde de jetons par défaut
+    defaultValue: 0,
+  },
+  escrowBalance: {  // ✅ Portefeuille sécurisé (fonds bloqués)
+    type: DataTypes.FLOAT,
+    allowNull: false,
+    defaultValue: 0,
   },
   isApproved: {
     type: DataTypes.BOOLEAN,
     allowNull: false,
-    defaultValue: false, // Par défaut, l'utilisateur n'est pas approuvé
+    defaultValue: false,
   },
-  activationCode: { // Ajout du champ activationCode
+  activationCode: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
+  address: {  // Ajout du champ Adresse
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
+  cin: {  // Ajout du champ CIN
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
+  dateOfBirth: {  // Ajout du champ Date de Naissance
+    type: DataTypes.DATE,
+    allowNull: true,
+  },
+  
+  gender: {  // Ajout du champ Genre
+    type: DataTypes.ENUM('male', 'female', 'other'),
+    allowNull: true,
+  },
+  twoFactorAuthEnabled: {  // Champ pour la vérification en deux étapes
+    type: DataTypes.BOOLEAN,
+    defaultValue: false,
+  },
+  twoFactorSecret: {  // Champ pour stocker le secret de 2FA
     type: DataTypes.STRING,
     allowNull: true,
   },
 }, {
   timestamps: true,
 });
-
-
 
 module.exports = User;

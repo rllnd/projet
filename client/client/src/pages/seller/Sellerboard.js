@@ -24,16 +24,19 @@ import { AppProvider } from '@toolpad/core/AppProvider';
 import { DashboardLayout } from '@toolpad/core/DashboardLayout';
 import { useDemoRouter } from '@toolpad/core/internal';
 
+import TauxConversion from './TauxConversion';
+import SellerDeliveries from "./SellerDeliveries";
 import Overview from './Overview';
 import SellerArticles from './SellerArticles';
 import CreerArticle from './CreerArticle';
-import ApprovedArticle from './ApprovedArticle';
+import StoppedAuctions from './StoppedAuctions';
 import ActiveAuction from './ActiveAuction';
 import AuctionHistory from './AuctionHistory';
 import SalesHistory from './SalesHistory';
 import Wallet from './Wallet'; // Ajout du formulaire de retrait
 import Notifications from './Notifications';
 import AccountSettings from './AccountSettings';
+import SellerAuction from './SellerAuction';
 import img from '../../../src/assets/images/Gtoken.webp';
 import { blue, teal } from '@mui/material/colors';
 
@@ -51,20 +54,25 @@ const NAVIGATION = [
   { segment: 'articles', title: 'Mes Articles', icon: <GavelIcon />},
   { segment: 'creer-article', title: 'Créer articles', icon: <GavelIcon /> },
   { kind: 'header', title: 'Gestion des enchères' },
-  { segment: 'approuved-article', title: 'Les articles approuvés', icon: <GavelIcon /> },
+  { segment: 'encheres-stop', title: 'Mes enchères arrêtées', icon: <GavelIcon /> },
   { segment: 'mes-encheres', title: 'Mes enchères actives', icon: <GavelIcon /> },
   { segment: 'encheres-annulees', title: 'Enchères annulées', icon: <GavelIcon /> },
+  { segment: 'encheres-seller', title: 'Toute les enchères', icon: <GavelIcon /> },
   { segment: 'historique-enchere', title: 'Historique des enchères', icon: <GavelIcon /> },
   { kind: 'header', title: 'Historique des Ventes' },
-  { segment: 'sales-history', title: 'Historique des Ventes', icon: <AssignmentTurnedInIcon /> },
+  { segment: 'sales-history', title: 'Historique des transactions', icon: <AssignmentTurnedInIcon /> },
   { kind: 'header', title: 'Portefeuille' },
   { segment: 'wallet', title: 'Portefeuille', icon: <MonetizationOnIcon /> }, // Nouvelle section pour le portefeuille
+  { segment: 'taux-conversion', title: 'Taux de Conversion Tokens / Ariary', icon: <MonetizationOnIcon sx={{ color: teal[700] }} /> },
   { kind: 'header', title: 'Notifications' },
     {
       segment: 'notifications',
       title: 'Notifications',
       icon: <NotificationBadge onClick={() => navigate('/notifications')} />, // Navigation corrigée
     },
+    { kind: 'header', title: 'Gestion des Livraisons' },
+{ segment: 'seller-deliveries', title: 'Mes Livraisons', icon: <AssignmentTurnedInIcon /> },
+
   { kind: 'header', title: 'Paramètres' },
   { segment: 'settings', title: 'Paramètres du Compte', icon: <SettingsIcon /> },
 ];
@@ -80,18 +88,27 @@ function DemoPageContent({ pathname }) {
     case '/overview': return <Overview />;
     case '/articles': return <SellerArticles />;
     case '/creer-article': return <CreerArticle />;
-    case '/approuved-article': return <ApprovedArticle />;
+    case '/encheres-stop': return <StoppedAuctions />;
     case '/mes-encheres': return <ActiveAuction />;
+    case '/encheres-seller': return <SellerAuction />;
     case '/historique-enchere': return <AuctionHistory  />;
     case '/sales-history': return <SalesHistory />;
+    case '/seller-deliveries': return <SellerDeliveries userId={1} />; 
+
     case '/encheres-annulees': return <CancelledAuctionsList />;
     case '/wallet': return <Wallet />; // Affiche le formulaire de retrait
+    case '/taux-conversion':
+      return <TauxConversion />;
     case '/notifications': return <NotificationsList />;
     case '/settings': return <AccountSettings />;
 
     default: return (
-      <Box sx={{ py: 4, display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
-        <Typography variant="h5">Section non définie pour {pathname}</Typography>
+      <Box sx={{ py: 4, textAlign: 'center' }}>
+        <Typography variant="h5">Bienvenue dans le Tableau de Bord vendeur</Typography>
+        <Typography variant="body1" color="textSecondary">
+          Sélectionnez une section pour voir les détails.
+        </Typography>
+        <Overview />
       </Box>
     );
   }

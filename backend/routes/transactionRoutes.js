@@ -1,4 +1,5 @@
 const express = require('express');
+const { protect } = require('../middleware/authMiddleware');
 //const { initiateAirtelPayment, } = require('../controllers/transactionController');
 {/*const {
   createTokenPurchaseTransaction,
@@ -20,7 +21,7 @@ const transactionController = require('../controllers/transactionController');
 
 
 // Route pour l'achat de tokens
-router.post('/purchase',transactionController.purchaseTokens);
+router.post('/purchase',protect,transactionController.purchaseTokens);
 // Route pour initier un paiement
 //router.post('/purchase',protect, initiateAirtelPayment);
 

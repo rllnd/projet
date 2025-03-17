@@ -1,21 +1,19 @@
-// routes/adminRoutes.js
 const express = require('express');
 const router = express.Router();
+const adminController = require('../controllers/adminController');
 const { protect } = require('../middleware/authMiddleware');
-const { admin } = require('../middleware/adminMiddleware');
-const {
-  getAllUsers,
-  updateUser,
-  deleteUser,
-} = require('../controllers/adminController');
+const auditLogger = require('../middleware/auditLogger'); // Middleware d'audit
 
-// Obtenir tous les utilisateurs
-router.get('/users', protect, admin, getAllUsers);
+// Route pour lister les administrateurs (Pas besoin d'audit ici)
+router.get('/admins', protect, adminController.getAllAdmins);
 
-// Mettre à jour un utilisateur
-router.put('/users/:id', protect, admin, updateUser);
+// Route pour ajouter un administrateur (On enregistre l'audit)
+router.post('/admins', protect, auditLogger, adminController.createAdmin);
 
-// Supprimer un utilisateur
-router.delete('/users/:id', protect, admin, deleteUser);
+// Route pour supprimer un administrateur (On enregistre l'audit)
+router.delete('/admins/:id', protect, auditLogger, adminController.deleteAdmin);
+
+// Route pour récupérer l'overview administrateur (Pas besoin d'audit)
+router.get('/overview', protect, adminController.getAdminOverview);
 
 module.exports = router;

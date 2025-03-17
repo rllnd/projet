@@ -1,179 +1,200 @@
 import React, { useState, useEffect } from 'react';
 import {
-  Box, Typography, Button, Card, CardContent, TextField, Grid, Dialog, DialogTitle, DialogContent, DialogActions,
-  CircularProgress, Snackbar, Alert,
+  Box, Typography, Grid, TextField, CircularProgress, Paper,
 } from '@mui/material';
-import MobileFriendlyIcon from '@mui/icons-material/MobileFriendly';
-import MonetizationOnIcon from '@mui/icons-material/MonetizationOn';
-import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
-import { teal, red } from '@mui/material/colors';
+import { Button, Modal, message, Table, Card } from 'antd';
 import axios from 'axios';
 
-const API_URL = 'http://localhost:5000/api'; // Définir l'URL de votre API
+const API_URL = 'http://localhost:5000/api';
 
 const AchatTokens = () => {
   const [tokenAmount, setTokenAmount] = useState('');
   const [mobileNumber, setMobileNumber] = useState('');
-  const [openDialog, setOpenDialog] = useState(false);
-  const [selectedOperator, setSelectedOperator] = useState(null);
+  const [receiverPhoneNumber, setReceiverPhoneNumber] = useState('');
+  const [selectedOperator, setSelectedOperator] = useState('');
   const [balance, setBalance] = useState(0);
   const [loading, setLoading] = useState(false);
-  const [success, setSuccess] = useState(false);
-  const [error, setError] = useState(null);
+  const [isModalVisible, setIsModalVisible] = useState(false);
 
   useEffect(() => {
     const fetchBalance = async () => {
-      const token = localStorage.getItem('authToken');
       try {
-        const response = await axios.get(`${API_URL}/user/profile`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        setBalance(response.data.tokenBalance);
+        const token = localStorage.getItem('authToken');
+        const [balanceResponse] = await Promise.all([
+          axios.get(`${API_URL}/user/profile`, { headers: { Authorization: `Bearer ${token}` } }),
+        ]);
+        setBalance(balanceResponse.data.tokenBalance);
+        
       } catch (err) {
-        setError("Erreur lors de la récupération du solde.");
+        message.error('Erreur lors de la récupération des données.');
       }
     };
     fetchBalance();
   }, []);
 
+  const validatePhoneNumber = (operator, number) => {
+    const patterns = {
+      MVOLA: /^034\d{7}$/,
+      'Orange Money': /^032\d{7}$/,
+      'Airtel Money': /^033\d{7}$/,
+    };
+    return patterns[operator]?.test(number);
+  };
+
   const handleOperatorSelect = (operator) => {
-    if (tokenAmount > 0 && mobileNumber) {
-      setSelectedOperator(operator);
-      setOpenDialog(true);
-    } else {
-      setError("Veuillez entrer un montant valide de tokens et un numéro de téléphone.");
+    if (!tokenAmount || !mobileNumber || tokenAmount <= 0) {
+      message.error('Veuillez entrer un montant valide et un numéro de téléphone.');
+      return;
     }
+
+    if (!validatePhoneNumber(operator, mobileNumber)) {
+      message.error(`Le numéro de téléphone ne correspond pas au format de ${operator}.`);
+      return;
+    }
+
+    setSelectedOperator(operator);
+    setIsModalVisible(true);
   };
 
   const handlePurchase = async () => {
     setLoading(true);
-    setOpenDialog(false);
-    const token = localStorage.getItem('authToken');
-    const userId = localStorage.getItem('userId');
+    setIsModalVisible(false);
 
     try {
+      const token = localStorage.getItem('authToken');
       const response = await axios.post(
-        `${API_URL}/transactions/purchase`,
-        { userId, operator: selectedOperator, tokenAmount, mobileNumber },
+        `${API_URL}/payments/purchase1`,
+        {
+          operator: selectedOperator,
+          amount: parseFloat(tokenAmount),
+          phoneNumber: mobileNumber,
+          receiverPhoneNumber,
+        },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      setBalance(prevBalance => prevBalance + parseFloat(tokenAmount));
-      setSuccess(true);
-      // Réinitialiser les champs
-      setTokenAmount('');
-      setMobileNumber('');
-      setSelectedOperator(null);
-    } catch (error) {
-      setError("Erreur lors de l'achat de tokens : " + (error.response?.data?.message || error.message));
+
+      if (response.data.success) {
+        setBalance((prevBalance) => prevBalance + parseFloat(tokenAmount));
+        message.success('Achat réussi !');
+        setTokenAmount('');
+        setMobileNumber('');
+        setReceiverPhoneNumber('');
+      } else {
+        message.error(response.data.message || 'Erreur lors de la transaction.');
+      }
+    } catch (err) {
+      message.error('Erreur lors de l\'achat : ' + (err.response?.data?.message || err.message));
     } finally {
       setLoading(false);
     }
   };
 
+
+
   return (
-    <Box sx={{ padding: 4, maxWidth: 600, margin: '0 auto' }}>
-      <Typography variant="h5" sx={{ color: teal[700], fontWeight: 'bold', mb: 4 }}>
-        Acheter des Tokens (GTC)
+    <Box sx={{ padding: 4, maxWidth: 800, margin: '0 auto' }}>
+      <Typography variant="h5" sx={{ color: '#00A86B', fontWeight: 'bold', mb: 4, textAlign: 'center' }}>
+        Achat de GTC
       </Typography>
-      
-      <Grid container spacing={2} alignItems="flex-start">
-        <Grid item xs={12} md={6}>
-          <Card sx={{ padding: 1, backgroundColor: teal[50], boxShadow: 1, borderRadius: 2 }}>
-            <CardContent>
-              <Typography variant="body1" sx={{ color: 'black' }}>
-                Solde actuel : <strong>{balance} GTC</strong>
-              </Typography>
-            </CardContent>
-          </Card>
+
+      <Paper elevation={3} sx={{ padding: 2, mb: 3 }}>
+        <Typography variant="h6" sx={{ color: '#00A86B', fontWeight: 'bold' }}>
+          Solde Actuel
+        </Typography>
+        <Typography variant="h4" sx={{ color: '#00A86B', fontWeight: 'bold' }}>
+          {balance} GTC
+        </Typography>
+      </Paper>
+
+      <Grid container spacing={3}>
+        <Grid item xs={12} md={4}>
+          <TextField
+            label="Montant en GTC"
+            variant="outlined"
+            fullWidth
+            size="small"
+            type="number"
+            value={tokenAmount}
+            onChange={(e) => setTokenAmount(e.target.value)}
+          />
         </Grid>
-        <Grid item xs={12} md={6}>
-          <Card sx={{ padding: 1, backgroundColor: teal[50], boxShadow: 1, borderRadius: 2 }}>
-            <CardContent>
-              <Typography variant="body1" sx={{ color: 'black' }}>
-                Montant en tokens (GTC) à acheter :
-              </Typography>
-              <TextField
-                label="Montant en GTC"
-                variant="outlined"
-                fullWidth
-                size="small"
-                type="number"
-                value={tokenAmount}
-                onChange={(e) => setTokenAmount(e.target.value)}
-                sx={{ mt: 1 }}
-              />
-            </CardContent>
-          </Card>
+        <Grid item xs={12} md={4}>
+          <TextField
+            label="Numéro de Téléphone"
+            variant="outlined"
+            fullWidth
+            size="small"
+            type="tel"
+            value={mobileNumber}
+            onChange={(e) => setMobileNumber(e.target.value)}
+          />
+        </Grid>
+        <Grid item xs={12} md={4}>
+          <TextField
+            label="Numéro du Récepteur"
+            variant="outlined"
+            fullWidth
+            size="small"
+            type="tel"
+            value={receiverPhoneNumber}
+            onChange={(e) => setReceiverPhoneNumber(e.target.value)}
+          />
         </Grid>
       </Grid>
 
-      <Box sx={{ mt: 2 }}>
-        <Card sx={{ padding: 1, backgroundColor: teal[50], boxShadow: 1, borderRadius: 2 }}>
-          <CardContent>
-            <Typography variant="body1" sx={{ color: 'black' }}>
-              Numéro de téléphone pour le paiement mobile :
-            </Typography>
-            <TextField
-              label="Numéro de téléphone"
-              variant="outlined"
-              fullWidth
-              size="small"
-              type="tel"
-              value={mobileNumber}
-              onChange={(e) => setMobileNumber(e.target.value)}
-              sx={{ mt: 1 }}
-            />
-          </CardContent>
-        </Card>
-      </Box>
-
-      <Typography variant="h6" sx={{ mt: 3, mb: 2, color: teal[700], fontWeight: 'bold' }}>
-        Choisissez votre moyen de paiement
+      <Typography variant="h6" sx={{ mt: 4, mb: 2, color: '#00A86B', fontWeight: 'bold' }}>
+        Choisissez votre opérateur mobile
       </Typography>
       <Grid container spacing={2}>
-        {['Airtel', 'Orange', 'Telma'].map(operator => (
-          <Grid item xs={12} sm={4} key={operator}>
+        {[
+            { name: 'MVOLA', color: '#FCE205', logo: '/telma.png' },
+            { name: 'Orange Money', color: '#FF8300', logo: '/orange.png' },
+            { name: 'Airtel Money', color: '#FF0000', logo: '/airtel.png' },
+
+        ].map(({ name, color, logo }) => (
+          <Grid item xs={4} key={name}>
             <Button
-              fullWidth
-              variant="outlined"
-              onClick={() => handleOperatorSelect(operator)}
-              startIcon={operator === 'Airtel' ? <MobileFriendlyIcon /> : operator === 'Orange' ? <MonetizationOnIcon /> : <AccountBalanceWalletIcon />}
-              sx={{ padding: '6px 8px', color: operator === 'Airtel' ? red[600] : operator === 'Orange' ? 'orange' : teal[700], borderColor: operator === 'Airtel' ? red[600] : operator === 'Orange' ? 'orange' : teal[700] }}
+              style={{
+                backgroundColor: color,
+                color: '#fff',
+                fontWeight: 'bold',
+                display: 'flex',
+                alignItems: 'center',
+              }}
+              onClick={() => handleOperatorSelect(name)}
             >
-              {operator} Money
+             <img
+                src={logo}
+                alt={name}
+                style={{ width: 24, height: 24, marginRight: 8 }}
+                />
+
+              {name}
             </Button>
           </Grid>
         ))}
       </Grid>
 
-      <Dialog open={openDialog} onClose={() => setOpenDialog(false)}>
-        <DialogTitle>Confirmer l'achat</DialogTitle>
-        <DialogContent>
-          <Typography color="grey">
-            Vous êtes sur le point d'acheter {tokenAmount} GTC via {selectedOperator} avec le numéro {mobileNumber}.
-            Veuillez confirmer pour continuer.
-          </Typography>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setOpenDialog(false)} color="secondary">
-            Annuler
-          </Button>
-          <Button onClick={handlePurchase} variant="contained" color="primary">
-            {loading ? <CircularProgress size={24} color="inherit" /> : "Confirmer"}
-          </Button>
-        </DialogActions>
-      </Dialog>
+     
 
-      <Snackbar open={!!error} autoHideDuration={6000} onClose={() => setError(null)}>
-        <Alert onClose={() => setError(null)} severity="error" sx={{ width: '100%' }}>
-          {error}
-        </Alert>
-      </Snackbar>
-      <Snackbar open={success} autoHideDuration={6000} onClose={() => setSuccess(false)}>
-        <Alert onClose={() => setSuccess(false)} severity="success" sx={{ width: '100%' }}>
-          Achat de {tokenAmount} GTC réussi !
-        </Alert>
-      </Snackbar>
+            <Modal
+            title="Confirmer l'achat"
+            open={isModalVisible}
+            onCancel={() => setIsModalVisible(false)}
+            footer={[
+                <Button key="cancel" onClick={() => setIsModalVisible(false)}>
+                Annuler
+                </Button>,
+                <Button key="confirm" type="primary" onClick={handlePurchase} loading={loading}>
+                Confirmer
+                </Button>,
+            ]}
+            >
+            <p>
+                Vous allez acheter <strong>{tokenAmount} GTC</strong> via <strong>{selectedOperator}</strong> avec le numéro <strong>{mobileNumber}</strong>.
+            </p>
+            </Modal>
+
     </Box>
   );
 };

@@ -44,6 +44,10 @@
   .buy__btn:hover {
     background: #3a4e72;
   }
+
+
+
+  
   
   .buy__btn a {
     text-decoration: none;
@@ -95,12 +99,59 @@
       margin-left: 0; /* Supprime le décalage à gauche sur les petits écrans */
     }
   }
-  @media only screen and (max-width:576px){
-    .hero__content{
-        padding-top: 0;
-        margin-bottom: 40px;
+
+  @media only screen and (max-width: 576px) {
+    .hero__section {
+        flex-direction: column; /* Empile le texte et l'image */
+        align-items: center; /* Centre le contenu */
+        text-align: center; /* Centre le texte */
+        padding: 10px; /* Réduit le padding */
+    }
+
+    .hero__content {
+        padding-top: 0; /* Supprime le padding en haut */
+        max-height: none; /* Permet au contenu d'occuper tout l'espace */
+        overflow: visible; /* Affiche tout le texte */
+        text-align: center; /* Centre le texte */
+        margin-bottom: 15px; /* Ajoute un espacement en bas */
+    }
+
+    .hero__content h2 {
+        font-size: 1.5rem; /* Ajuste la taille du titre */
+        margin-bottom: 10px; /* Ajuste l'espacement sous le titre */
+    }
+
+    .hero__content p {
+        font-size: 0.9 rem; /* Ajuste la taille du texte */
+        margin-bottom: 10px; /* Ajuste l'espacement sous le paragraphe */
+    }
+
+    .hero__image {
+        width: 100%; /* Laisse l'image prendre toute la largeur */
+        display: flex;
+        justify-content: center; /* Centre l'image */
+        margin-top: 10px; /* Ajuste l'espace entre le texte et l'image */
+    }
+
+    .hero__image img {
+        max-width: 100%; /* L'image s'ajuste à la largeur de son conteneur */
+        height: auto; /* Maintient le ratio d'aspect */
+    }
+
+    .buy__btn {
+        width: 100%; /* Bouton prend toute la largeur */
+        padding: 10px; /* Ajuste le padding */
+        margin-top: 10px; /* Ajuste l'espacement au-dessus du bouton */
+    }
+
+    .read-more {
+        display: block; /* Affiche le bouton "Lire la suite" */
+        margin-top: 10px; /* Ajuste l'espacement au-dessus du bouton */
     }
 }
+
+
+
   /* Trending Products */
   .trending__products,
   .enchre_cours {
@@ -362,3 +413,68 @@
     color: #029e9d;
   }
   
+  .filter-container {
+    display: flex;
+    justify-content: center; /* Centrer les éléments horizontalement */
+    margin: 20px 0;
+  }
+  
+  .filter-container {
+  display: flex;
+  justify-content: center; /* Centrer les éléments horizontalement */
+  flex-wrap: wrap; /* Permettre aux éléments de passer à la ligne sur les petits écrans */
+  margin: 20px 0;
+}
+
+.filter-container {
+  display: flex;
+  justify-content: center; /* Centrer les éléments horizontalement */
+  flex-wrap: wrap; /* Permettre aux éléments de passer à la ligne sur les petits écrans */
+  margin: 20px 0;
+}
+
+.filter-input {
+  padding: 10px;
+  margin: 5px; /* Espacement horizontal et vertical entre les champs */
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  transition: border-color 0.3s;
+  width: 100%; /* Prendre toute la largeur du conteneur */
+  max-width: 200px; /* Limiter la largeur maximale */
+}
+
+.filter-input:focus {
+  border-color: #007bff; /* Couleur de la bordure lorsque le champ est en focus */
+  outline: none; /* Supprime le contour par défaut */
+}
+
+.filter-label {
+  margin-right: 10px; /* Espacement à droite de l'étiquette */
+  font-weight: bold;
+}
+
+.buy__btn1-container {
+  display: flex;
+  justify-content: center; /* 🔥 Centre horizontalement */
+  align-items: center; /* 🔥 Centre verticalement */
+  width: 100%; /* 🔥 Assurez-vous qu'il prend toute la largeur */
+  margin-top: 20px; /* 🔥 Ajuster l'espace au-dessus */
+}
+
+
+
+.buy__btn1 {
+  border: none;
+  outline: none;
+  border-radius: 5px;
+  padding: 10px 20px;
+  background: #1c2b4a;
+  color: #fff;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background 0.3s ease;
+  text-decoration: none !important;
+  display: flex; /* 🔥 Corrige les marges internes */
+  justify-content: center;
+  align-items: center;
+}

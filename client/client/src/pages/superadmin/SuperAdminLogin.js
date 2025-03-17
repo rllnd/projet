@@ -167,19 +167,7 @@ const SuperAdminLogin = () => {
                 label="Remember"
                 sx={{ ml: 0, mr: 2 }} 
               />
-              <Button
-                variant="text"
-                onClick={handleForgotPassword}
-                sx={{
-                  textTransform: 'lowercase',
-                  '&:hover': {
-                    color: teal[700],
-                  },
-                  padding: 0,
-                }}
-              >
-                forgot password?
-              </Button>
+              
             </Box>
             <Button
               type="submit"

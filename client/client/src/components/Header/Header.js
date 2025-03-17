@@ -15,6 +15,7 @@ import DashboardIcon from '../../assets/images/dashboard.svg';
 const nav__links = [
   { path: '/HomePage', display: 'Accueil' },
   { path: '/articles', display: 'Articles' },
+  { path: '/contacts', display: 'Contacts' },
   { path: '/About', display: 'A propos' },
 ];
 

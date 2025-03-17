@@ -16,38 +16,80 @@ import { AttachMoney as AttachMoneyIcon, CheckCircleOutline } from '@mui/icons-m
 import axios from 'axios';
 import { teal, grey } from '@mui/material/colors';
 import CountdownTimer from '../../components/UI/CountdownTimer'; // Import du composant
+import { useSocket } from '../../contexts/SocketContext'; // ✅ Import du WebSocket
+import { useMediaQuery } from '@mui/material'; // Import de useMediaQuery
 
 const EncheresEnCours = () => {
   const [participatingBids, setParticipatingBids] = useState([]);
+  const socket = useSocket(); // ✅ WebSocket
+  const isMobile = useMediaQuery('(max-width:600px)'); // Vérification de la taille de l'écran
 
-  // Récupération des enchères participées
+  // 📌 Récupération des enchères participées
   const fetchParticipatingBids = async () => {
     try {
       const token = localStorage.getItem('authToken');
       const response = await axios.get('http://localhost:5000/api/bids/participating', {
         headers: { Authorization: `Bearer ${token}` },
       });
-  
+
       console.log('Réponse des enchères participées :', response.data);
-  
-      // Grouper les enchères par article (une seule ligne par article)
-      const groupedBids = response.data.reduce((acc, bid) => {
-        console.log('Vérification des détails de l\'article pour l\'enchère :', bid);
-        if (!acc[bid.articleDetails?.name]) {
-          acc[bid.articleDetails?.name] = bid; // Ajouter l'article si non présent
-        } else if (acc[bid.articleDetails?.name].yourBid < bid.yourBid) {
-          acc[bid.articleDetails?.name] = bid; // Mettre à jour avec la mise la plus haute
+
+      const groupedBids = {};
+      response.data.forEach((bid) => {
+        if (!groupedBids[bid.auctionId] || groupedBids[bid.auctionId].yourBid < bid.yourBid) {
+          groupedBids[bid.auctionId] = bid;
         }
-        return acc;
-      }, {});
-  
-      setParticipatingBids(Object.values(groupedBids)); // Convertir en tableau
+      });
+
+      const validBids = Object.values(groupedBids);
+      console.log("✅ Enchères après filtrage :", validBids);
+
+      setParticipatingBids(validBids);
     } catch (error) {
       console.error('Erreur lors de la récupération des enchères participées :', error.response?.data || error.message);
     }
   };
-  
-  // Fonction pour mettre à jour une mise
+
+  // 📌 Mise à jour en temps réel via WebSocket
+  useEffect(() => {
+    fetchParticipatingBids(); // Chargement initial
+
+    if (socket) {
+      socket.on("bid-updated", (updatedAuction) => {
+        console.log("🔼 Mise à jour en temps réel :", updatedAuction);
+        setParticipatingBids((prev) =>
+          prev.map((bid) =>
+            bid.auctionId === updatedAuction.auctionId
+              ? { ...bid, highestBid: updatedAuction.currentHighestBid }
+              : bid
+          )
+        );
+      });
+
+      socket.on("auction-stopped", (stoppedAuction) => {
+        console.log("🛑 Enchère stoppée :", stoppedAuction.id);
+        setParticipatingBids((prev) => prev.filter((bid) => bid.auctionId !== stoppedAuction.id));
+      });
+
+      socket.on("auction-cancelled", (cancelledAuction) => {
+        console.log("🚫 Enchère annulée :", cancelledAuction.id);
+        setParticipatingBids((prev) => prev.filter((bid) => bid.auctionId !== cancelledAuction.id));
+      });
+
+      socket.on("auction-ended", (endedAuction) => {
+        console.log("🚨 Enchère terminée :", endedAuction.id);
+        setParticipatingBids((prev) => prev.filter((bid) => bid.auctionId !== endedAuction.id));
+      });
+
+      return () => {
+        socket.off("bid-updated");
+        socket.off("auction-stopped");
+        socket.off("auction-cancelled");
+        socket.off("auction-ended");
+      };
+    }
+  }, [socket]);
+
   const handlePlaceBid = async (auctionId, newBidAmount) => {
     if (!newBidAmount || newBidAmount <= 0) {
       alert('Veuillez entrer une mise valide.');
@@ -60,24 +102,17 @@ const EncheresEnCours = () => {
       const token = localStorage.getItem('authToken');
       const response = await axios.post(
         'http://localhost:5000/api/bids/manual',
-        { auctionId, bidAmount: newBidAmount }, // Utilisez toujours auctionId ici
+        { auctionId, bidAmount: newBidAmount },
         { headers: { Authorization: `Bearer ${token}` } }
       );
   
       console.log('Réponse du backend après la mise :', response.data);
-  
-      // Rafraîchissez les données après la mise
       fetchParticipatingBids();
     } catch (error) {
       console.error('Erreur lors de la mise à jour de l\'enchère :', error.response?.data || error.message);
       alert(error.response?.data?.message || 'Erreur lors de la soumission de votre mise.');
     }
   };
-  
-  
-  useEffect(() => {
-    fetchParticipatingBids();
-  }, []);
 
   return (
     <Box sx={{ padding: 3, backgroundColor: grey[100], borderRadius: '8px' }}>
@@ -90,27 +125,35 @@ const EncheresEnCours = () => {
             <TableRow sx={{ backgroundColor: teal[600] }}>
               <TableCell sx={{ color: '#fff', fontWeight: 'bold', textAlign: 'center' }}>Nom de l'Article</TableCell>
               <TableCell sx={{ color: '#fff', fontWeight: 'bold', textAlign: 'center' }}>Votre Dernière Mise (GTC)</TableCell>
-              <TableCell sx={{ color: '#fff', fontWeight: 'bold', textAlign: 'center' }}>Enchère la Plus Élevée (GTC)</TableCell>
-              <TableCell sx={{ color: '#fff', fontWeight: 'bold', textAlign: 'center' }}>Temps Restant</TableCell>
+              {!isMobile && (
+                <>
+                  <TableCell sx={{ color: '#fff', fontWeight: 'bold', textAlign: 'center' }}>Enchère la Plus Élevée (GTC)</TableCell>
+                  <TableCell sx={{ color: '#fff', fontWeight: 'bold', textAlign: 'center' }}>Temps Restant</TableCell>
+                </>
+              )}
               <TableCell sx={{ color: '#fff', fontWeight: 'bold', textAlign: 'center' }}>Action</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
             {participatingBids.length > 0 ? (
               participatingBids.map((bid) => (
-                <TableRow key={bid.id} sx={{ backgroundColor: teal[50] }}>
+                <TableRow key={`${bid.auctionId}-${bid.highestBid}`} sx={{ backgroundColor: teal[50] }}>
                   <TableCell sx={{ textAlign: 'center', fontWeight: 'bold', color: teal[900] }}>
                     {bid.articleDetails.name}
                   </TableCell>
                   <TableCell sx={{ textAlign: 'center', fontWeight: 'bold', color: teal[800] }}>
                     {bid.yourBid} GTC
                   </TableCell>
-                  <TableCell sx={{ textAlign: 'center', fontWeight: 'bold', color: teal[800] }}>
-                    {bid.highestBid || 'Aucune mise'}
-                  </TableCell>
-                  <TableCell sx={{ textAlign: 'center', color: teal[700] }}>
-                    <CountdownTimer endDate={bid.endDate} /> {/* Utilisation du CountdownTimer */}
-                  </TableCell>
+                  {!isMobile && (
+                    <>
+                      <TableCell sx={{ textAlign: 'center', fontWeight: 'bold', color: teal[800] }}>
+                        {bid.highestBid || 'Aucune mise'}
+                      </TableCell>
+                      <TableCell sx={{ textAlign: 'center', color: teal[700] }}>
+                        <CountdownTimer endDate={bid.endDate} />
+                      </TableCell>
+                    </>
+                  )}
                   <TableCell sx={{ textAlign: 'center' }}>
                     {bid.yourBid >= bid.highestBid ? (
                       <Chip
@@ -126,26 +169,25 @@ const EncheresEnCours = () => {
                       />
                     ) : (
                       <Button
-                          variant="contained"
-                          sx={{
-                            backgroundColor: teal[600],
-                            '&:hover': { backgroundColor: teal[800] },
-                            color: '#fff',
-                            fontWeight: 'bold',
-                            textTransform: 'none',
-                          }}
-                          startIcon={<AttachMoneyIcon />}
-                          onClick={() => {
-                            const newBidAmount = parseFloat(prompt('Entrez votre nouvelle mise :'));
-                            if (newBidAmount > bid.highestBid) {
-                              console.log('Envoi de la mise avec auctionId :', bid.id); // `bid.id` correspond à `auctionId`
-                              handlePlaceBid(bid.id, newBidAmount);
-                            } else {
-                              alert('Votre nouvelle mise doit être supérieure à l\'enchère la plus élevée.');
-                            }
-                          }}
-                        >
-                          Augmenter votre mise
+                        variant="contained"
+                        sx={{
+                          backgroundColor: teal[600],
+                          '&:hover': { backgroundColor: teal[800] },
+                          color: '#fff',
+                          fontWeight: 'bold',
+                          textTransform: 'none',
+                        }}
+                        startIcon={<AttachMoneyIcon />}
+                        onClick={() => {
+                          const newBidAmount = parseFloat(prompt('Entrez votre nouvelle mise :'));
+                          if (newBidAmount > bid.highestBid) {
+                            handlePlaceBid(bid.auctionId, newBidAmount);
+                          } else {
+                            alert('Votre nouvelle mise doit être supérieure à l\'enchère la plus élevée.');
+                          }
+                        }}
+                      >
+                        Augmenter votre mise
                       </Button>
                     )}
                   </TableCell>

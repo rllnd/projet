@@ -19,10 +19,29 @@ const Auction = sequelize.define('Auction', {
     allowNull: false,
     defaultValue: 0,
   },
+  autoBidActive: {  // ✅ Ajout de ce champ
+    type: DataTypes.BOOLEAN,
+    allowNull: false,
+    defaultValue: false,
+  },
   highestBidUserId: {
     type: DataTypes.INTEGER,
     allowNull: true,
     references: { model: User, key: 'id' },
+  },
+  lastBidTime: {
+    type: DataTypes.DATE,
+    allowNull: true, // Null lorsqu'il n'y a pas encore d'enchères
+  },
+  
+  lastAutoBidTime: { // Dernière enchère (manuel ou AutoBid)
+    type: DataTypes.DATE,
+    allowNull: true,
+  },
+
+  finalizedAt: { // Ajout de finalizedAt
+    type: DataTypes.DATE,
+    allowNull: true, // Peut être nul si l'enchère est encore ouverte
   },
   endDate: {
     type: DataTypes.DATE,

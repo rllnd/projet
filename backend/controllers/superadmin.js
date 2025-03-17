@@ -2,7 +2,6 @@ const Admin = require('../models/Admin');
 const User = require('../models/User');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const Platform = require('../models/Platform');
 
 exports.loginSuperAdmin = async (req, res) => {
   const { email, password } = req.body;
@@ -26,7 +25,7 @@ exports.loginSuperAdmin = async (req, res) => {
     const token = jwt.sign(
       { id: superAdmin.id_admin, role: superAdmin.role },
       process.env.JWT_SECRET,
-      { expiresIn: '8h' }
+      { expiresIn: '48h' }
     );
     console.log("Token généré :", token);
 
@@ -38,20 +37,6 @@ exports.loginSuperAdmin = async (req, res) => {
   } catch (error) {
     console.error('Erreur lors de la connexion du Super Admin :', error);
     res.status(500).json({ message: 'Erreur du serveur.', error: error.message });
-  }
-};
-
-
-exports.getPlatformBalance = async (req, res) => {
-  try {
-    const platform = await Platform.findOne();
-    if (!platform) {
-      return res.status(404).json({ message: 'Solde de la plateforme non trouvé' });
-    }
-    res.json({ platformBalance: platform.balance });
-  } catch (error) {
-    console.error("Erreur lors de la récupération du solde de la plateforme :", error);
-    res.status(500).json({ message: "Erreur interne du serveur" });
   }
 };
 
@@ -92,5 +77,25 @@ exports.deactivateUser = async (req, res) => {
     res.json({ message: "Utilisateur désactivé avec succès" });
   } catch (error) {
     res.status(500).json({ message: "Erreur lors de la désactivation de l'utilisateur", error });
+  }
+};
+
+// Dans votre contrôleur (par exemple, superadminController.js)
+
+exports.deleteInactiveUser = async (req, res) => {
+  const userId = req.params.id; // Récupère l'ID de l'utilisateur depuis les paramètres de la requête
+
+  try {
+    const user = await User.findOne({ where: { id: userId, isApproved: false } });
+
+    if (!user) {
+      return res.status(404).json({ message: 'Utilisateur inactif non trouvé ou déjà approuvé.' });
+    }
+
+    await user.destroy(); // Supprime l'utilisateur inactif
+
+    res.json({ message: 'Utilisateur inactif supprimé avec succès.' });
+  } catch (error) {
+    res.status(500).json({ message: 'Erreur lors de la suppression de l\'utilisateur inactif', error });
   }
 };

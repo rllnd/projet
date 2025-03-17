@@ -1,142 +1,255 @@
 import React, { useEffect, useState } from 'react';
-import { Box, Typography, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, TextField, Select, MenuItem, CircularProgress } from '@mui/material';
+import { Table, message, Typography, Tag, Modal, DatePicker, Button, Select } from 'antd';
+import { Box, AppBar, Toolbar, IconButton, Grid, useMediaQuery } from '@mui/material';
+import { teal } from '@mui/material/colors';
+import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import axios from 'axios';
+import dayjs from 'dayjs';
 
-const HistoriqueTransactions = () => {
-  const [transactions, setTransactions] = useState([]);
-  const [filteredTransactions, setFilteredTransactions] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  
-  // Filtres
-  const [typeFilter, setTypeFilter] = useState('');
-  const [amountFilter, setAmountFilter] = useState('');
-  const [dateFilter, setDateFilter] = useState('');
+const API_URL = 'http://localhost:5000/api';
+
+const TransactionsHistory = () => {
+  const [transactionHistory, setTransactionHistory] = useState([]);
+  const [filteredHistory, setFilteredHistory] = useState([]);
+  const [selectedTransaction, setSelectedTransaction] = useState(null);
+  const [modalVisible, setModalVisible] = useState(false);
+  const isMobile = useMediaQuery('(max-width:600px)');
+
+  const [filterType, setFilterType] = useState('day'); // Type de filtrage
+  const [filterDate, setFilterDate] = useState(null);
 
   useEffect(() => {
-    const fetchTransactions = async () => {
+    const fetchTransactionHistory = async () => {
       try {
         const token = localStorage.getItem('authToken');
-        const userId = localStorage.getItem('userId');
-        if (!userId) {
-          setError("L'ID de l'utilisateur n'est pas disponible.");
-          setLoading(false);
-          return;
-        }
-
-        const response = await axios.get(`http://localhost:5000/api/transactions/user/${userId}`, {
+        const response = await axios.get(`${API_URL}/payments/history`, {
           headers: { Authorization: `Bearer ${token}` },
         });
-        setTransactions(response.data);
-        setFilteredTransactions(response.data);
-      } catch (error) {
-        console.error("Erreur lors de la récupération des transactions", error);
-        setError("Erreur lors de la récupération des transactions");
-      } finally {
-        setLoading(false);
+        setTransactionHistory(response.data.transactions || []);
+        setFilteredHistory(response.data.transactions || []);
+      } catch (err) {
+        message.error('Erreur lors de la récupération des transactions.');
       }
     };
-
-    fetchTransactions();
+    fetchTransactionHistory();
   }, []);
 
-  const handleFilterChange = () => {
-    let filtered = transactions;
-
-    if (typeFilter) {
-      filtered = filtered.filter(transaction => transaction.transactionType === typeFilter);
-    }
-    if (amountFilter) {
-      filtered = filtered.filter(transaction => transaction.amount >= parseFloat(amountFilter));
-    }
-    if (dateFilter) {
-      filtered = filtered.filter(transaction => transaction.createdAt.startsWith(dateFilter));
-    }
-
-    setFilteredTransactions(filtered);
+  const handleRowClick = (transaction) => {
+    setSelectedTransaction(transaction);
+    setModalVisible(true);
   };
 
-  useEffect(handleFilterChange, [typeFilter, amountFilter, dateFilter, transactions]);
+  const handleModalClose = () => {
+    setModalVisible(false);
+    setSelectedTransaction(null);
+  };
+
+  const handleFilter = () => {
+    if (filterDate) {
+      const filtered = transactionHistory.filter((transaction) => {
+        const transactionDate = dayjs(transaction.createdAt);
+        if (filterType === 'day') {
+          return transactionDate.isSame(filterDate, 'day');
+        } else if (filterType === 'month') {
+          return transactionDate.isSame(filterDate, 'month');
+        } else if (filterType === 'year') {
+          return transactionDate.isSame(filterDate, 'year');
+        }
+        return false;
+      });
+      setFilteredHistory(filtered);
+    } else {
+      setFilteredHistory(transactionHistory);
+    }
+  };
+
+  const typeColors = {
+    purchase: 'green',
+    sale: 'blue',
+    reward: 'gold',
+    spend: 'red',
+    transfer: 'purple',
+    refund:'gray',
+    escrow:'grey',
+    default: 'black',
+  };
+
+  const transactionColumns = [
+    {
+      title: 'Type',
+      dataIndex: 'type',
+      key: 'type',
+      render: (type) => (
+        <Tag color={typeColors[type] || typeColors.default}>
+          {(() => {
+            switch (type) {
+              case 'purchase':
+                return 'Achat';
+              case 'sale':
+                return 'Vente';
+              case 'reward':
+                return 'Récompense';
+              case 'spend':
+                return 'Dépense';
+              case "escrow":
+                  return "Dépense";
+              case 'transfer':
+                return 'Transfert';
+                case 'refund':
+                return 'Remboursement';
+              default:
+                return 'Inconnu';
+            }
+          })()}
+        </Tag>
+      ),
+    },
+    {
+      title: 'Montant (GTC)',
+      dataIndex: 'amount',
+      key: 'amount',
+      render: (amount) => `${amount.toFixed(2)} GTC`,
+    },
+   
+
+    {
+      title: 'Statut',
+      dataIndex: 'status',
+      key: 'status',
+      render: (status) => {
+        let color = status === 'completed' ? 'green' : status === 'pending' ? 'blue' : 'red';
+        return <Tag color={color}>{status === 'completed' ? 'Terminée' : status === 'pending' ? 'En attente' : 'Échouée'}</Tag>;
+      },
+    },
+    
+    {
+      title: 'Date',
+      dataIndex: 'createdAt',
+      key: 'createdAt',
+      render: (date) => new Date(date).toLocaleString(),
+    },
+  ];
 
   return (
-    <Box sx={{ padding: 4 }}>
-      <Typography variant="h5" sx={{ marginBottom: 2 }}>Historique des Transactions</Typography>
+    <Box
+      sx={{
+        backgroundColor: teal[50],
+        minHeight: '100vh',
+        padding: { xs: 2, sm: 4 },
+      }}
+    >
+      {/* Barre d'en-tête */}
+      <AppBar position="static" sx={{ backgroundColor: teal[700] }}>
+        <Toolbar>
+          <Typography
+            variant="h4"
+            sx={{ flexGrow: 1, color: '#fff', fontSize: { xs: 24, sm: 28, md: 32 } }}
+          >
+            Historique des Transactions
+          </Typography>
+          <IconButton color="inherit">
+            <AccountCircleIcon />
+          </IconButton>
+        </Toolbar>
+      </AppBar>
 
-      {/* Filtres */}
-      <Box sx={{ display: 'flex', gap: 2, marginBottom: 3 }}>
+      {/* Filtrage par date */}
+      <Box sx={{ margin: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <Select
-          value={typeFilter}
-          onChange={(e) => setTypeFilter(e.target.value)}
-          displayEmpty
-          sx={{ minWidth: 150 }}
+          value={filterType}
+          onChange={(value) => setFilterType(value)}
+          style={{ width: '30%', marginRight: '10px' }}
         >
-          <MenuItem value="">Tous les Types</MenuItem>
-          <MenuItem value="token_purchase">Achat de Tokens</MenuItem>
-          <MenuItem value="auction_payment">Paiement Enchère</MenuItem>
+          <Select.Option value="day">Par Jour</Select.Option>
+          <Select.Option value="month">Par Mois</Select.Option>
+          <Select.Option value="year">Par Année</Select.Option>
         </Select>
-
-        <TextField
-          type="number"
-          label="Montant minimum"
-          variant="outlined"
-          value={amountFilter}
-          onChange={(e) => setAmountFilter(e.target.value)}
+        <DatePicker
+          style={{ width: '60%' }}
+          onChange={(date) => setFilterDate(date)}
+          placeholder="Sélectionnez une date"
         />
-
-        <TextField
-          type="date"
-          label="Date"
-          InputLabelProps={{ shrink: true }}
-          variant="outlined"
-          value={dateFilter}
-          onChange={(e) => setDateFilter(e.target.value)}
-        />
+        <Button type="primary" onClick={handleFilter} style={{ marginLeft: '10px' }}>
+          Filtrer
+        </Button>
       </Box>
 
-      {loading ? (
-        <CircularProgress />
-      ) : error ? (
-        <Typography color="error">{error}</Typography>
-      ) : (
-        <TableContainer component={Paper}>
-          <Table>
-            <TableHead>
-              <TableRow>
-                <TableCell>Type de Transaction</TableCell>
-                <TableCell>Montant (GTC)</TableCell>
-                <TableCell>Date</TableCell>
-                <TableCell>Statut</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {filteredTransactions.length > 0 ? (
-                filteredTransactions.map((transaction) => (
-                  <TableRow key={transaction.id}>
-                    <TableCell>
-                      {transaction.transactionType === 'token_purchase'
-                        ? 'Achat de Tokens'
-                        : transaction.transactionType === 'auction_payment'
-                        ? 'Paiement Enchère'
-                        : 'Autre'}
-                    </TableCell>
-                    <TableCell>{transaction.amount} GTC</TableCell>
-                    <TableCell>{new Date(transaction.createdAt).toLocaleDateString()}</TableCell>
-                    <TableCell>{transaction.status}</TableCell>
-                  </TableRow>
-                ))
-              ) : (
-                <TableRow>
-                  <TableCell colSpan={4} align="center">
-                    Aucune transaction trouvée
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </TableContainer>
-      )}
+      {/* Contenu principal */}
+      <Box
+        sx={{
+          maxWidth: '100%',
+          margin: 'auto',
+          padding: { xs: 2, sm: 4 },
+          backgroundColor: '#fff',
+          borderRadius: 4,
+          boxShadow: 3,
+          overflowX: 'auto',
+        }}
+      >
+        <Typography
+          variant="h4"
+          sx={{
+            color: teal[700],
+            textAlign: 'center',
+            marginBottom: 3,
+            fontSize: { xs: 24, sm: 28, md: 32 },
+            fontWeight: 'bold',
+          }}
+        >
+          Historique des Transactions
+        </Typography>
+        <Grid container justifyContent="center">
+          <Grid item xs={12}>
+            <Table
+              dataSource={filteredHistory}
+              columns={transactionColumns}
+              rowKey="id"
+              onRow={(record) => ({
+                onClick: () => handleRowClick(record),
+              })}
+              pagination={{
+                pageSize: 5,
+                showSizeChanger: true,
+                locale: { items_per_page: 'par page' },
+              }}
+              bordered
+              scroll={{ x: isMobile ? 400 : 'max-content' }}
+              style={{
+                backgroundColor: '#fff',
+                borderRadius: 8,
+                boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
+              }}
+              size={isMobile ? 'small' : 'middle'}
+            />
+          </Grid>
+        </Grid>
+      </Box>
+
+      {/* Modal pour afficher les détails de la transaction */}
+      <Modal
+        title="Détails de la Transaction"
+        visible={modalVisible}
+        onCancel={handleModalClose}
+        footer={null}
+        centered
+        width={isMobile ? '80%' : '400px'}
+        bodyStyle={{ backgroundColor: teal[50], color: '#333', padding: '20px' }}
+        titleStyle={{ backgroundColor: teal[700], color: '#fff' }}
+      >
+        {selectedTransaction && (
+          <div>
+            <p style={{ fontSize: isMobile ? '14px' : '16px' }}><strong>Type:</strong> {selectedTransaction.type}</p>
+            <p style={{ fontSize: isMobile ? '14px' : '16px' }}><strong>Montant (GTC):</strong> {selectedTransaction.amount.toFixed(2)} GTC</p>
+            <p style={{ fontSize: isMobile ? '14px' : '16px' }}><strong>Montant Réel (MGA):</strong> {selectedTransaction.saleAmount ? selectedTransaction.saleAmount.toLocaleString() + ' MGA' : 'N/A'}</p>
+            <p style={{ fontSize: isMobile ? '14px' : '16px' }}><strong>Taux de Conversion Appliqué:</strong> {selectedTransaction.appliedConversionRate ? selectedTransaction.appliedConversionRate.toFixed(2) : 'N/A'}</p>
+            <p style={{ fontSize: isMobile ? '14px' : '16px' }}><strong>Transaction ID:</strong> {selectedTransaction.transactionId}</p>
+            <p style={{ fontSize: isMobile ? '14px' : '16px' }}><strong>Date:</strong> {new Date(selectedTransaction.createdAt).toLocaleString()}</p>
+            <p style={{ fontSize: isMobile ? '14px' : '16px' }}><strong>Statut:</strong> {selectedTransaction.success ? 'Réussie' : 'Échouée'}</p>
+          </div>
+        )}
+      </Modal>
     </Box>
   );
 };
 
-export default HistoriqueTransactions;
+export default TransactionsHistory;

@@ -13,4 +13,6 @@ router.get('/unread', protect, notificationController.getUnreadNotificationCount
 router.put('/mark-as-read', protect, notificationController.markNotificationsAsRead);
 
 
+
+
 module.exports = router;

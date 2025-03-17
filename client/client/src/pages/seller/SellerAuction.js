@@ -1,211 +1,237 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Typography, Button, Modal, Box, TextField, Chip } from '@mui/material';
-import { teal, grey } from '@mui/material/colors';
+import {
+  Box,
+  Typography,
+  Grid,
+  Paper,
+  useMediaQuery,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  CircularProgress,
+} from '@mui/material';
+import { Bar } from 'react-chartjs-2';
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+} from 'chart.js';
+import { teal, blue, amber, green, red } from '@mui/material/colors';
+import DashboardIcon from '@mui/icons-material/Dashboard';
+import CancelIcon from '@mui/icons-material/Cancel';
+import QueryBuilderIcon from '@mui/icons-material/QueryBuilder';
+import StopCircleIcon from '@mui/icons-material/StopCircle';
 
-const SellerAuctions = () => {
-  const [approvedArticles, setApprovedArticles] = useState([]);
-  const [activeAuctions, setActiveAuctions] = useState([]);
-  const [auctionHistory, setAuctionHistory] = useState([]);
-  const [selectedArticle, setSelectedArticle] = useState(null);
-  const [isAuctionModalOpen, setAuctionModalOpen] = useState(false);
-  const [auctionDetails, setAuctionDetails] = useState({
-    duration: '',
-    minIncrement: '',
-    startingPrice: ''
-  });
+// Enregistrement des composants nécessaires pour Chart.js
+ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
+
+const SellerDashboardStatistics = () => {
+  const [statistics, setStatistics] = useState({});
+  const [loading, setLoading] = useState(true);
+  const [timeFilter, setTimeFilter] = useState('daily');
+
+  const isMobile = useMediaQuery('(max-width:600px)');
 
   useEffect(() => {
-    fetchApprovedArticles();
-    fetchActiveAuctions();
-    fetchAuctionHistory();
-  }, []);
+    fetchStatistics();
+  }, [timeFilter]);
 
-  // Fetch articles approved for auction
-  const fetchApprovedArticles = async () => {
-    const token = localStorage.getItem('authToken');
+  const fetchStatistics = async () => {
     try {
-      const response = await axios.get('http://localhost:5000/api/articles/approved', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      setApprovedArticles(response.data);
+      setLoading(true);
+      const token = localStorage.getItem('authToken');
+      const response = await axios.get(
+        `http://localhost:5000/api/auctions/statisticsSeller?filter=${timeFilter}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      console.log('Statistics data:', response.data.data);
+      setStatistics(response.data.data || {});
+      setLoading(false);
     } catch (error) {
-      console.error("Erreur lors de la récupération des articles approuvés :", error);
+      console.error('Erreur lors de la récupération des statistiques :', error);
+      setLoading(false);
     }
   };
 
-  // Fetch active auctions
-  const fetchActiveAuctions = async () => {
-    const token = localStorage.getItem('authToken');
-    try {
-      const response = await axios.get('http://localhost:5000/api/auctions/active', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      setActiveAuctions(response.data);
-    } catch (error) {
-      console.error("Erreur lors de la récupération des enchères actives :", error);
-    }
+  const chartData = {
+    labels: ['Créées', 'Annulées', 'En cours', 'Stoppées'],
+    datasets: [
+      {
+        label: 'Nombre d\'enchères',
+        data: [
+          statistics.created || 0,
+          statistics.cancelled || 0,
+          statistics.ongoing || 0,
+          statistics.stopped || 0,
+        ],
+        backgroundColor: [blue[500], red[500], amber[500], teal[500]],
+        borderColor: [blue[700], red[700], amber[700], teal[700]],
+        borderWidth: 1,
+      },
+    ],
   };
 
-  // Fetch auction history
-  const fetchAuctionHistory = async () => {
-    const token = localStorage.getItem('authToken');
-    try {
-      const response = await axios.get('http://localhost:5000/api/auctions/history', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      setAuctionHistory(response.data);
-    } catch (error) {
-      console.error("Erreur lors de la récupération de l'historique des enchères :", error);
-    }
-  };
-
-  const openAuctionModal = (article) => {
-    setSelectedArticle(article);
-    setAuctionDetails({ duration: '', minIncrement: '', startingPrice: article.price });
-    setAuctionModalOpen(true);
-  };
-
-  const handleAuctionSubmit = async () => {
-    const token = localStorage.getItem('authToken');
-    try {
-      await axios.post(`http://localhost:5000/api/auctions/start/${selectedArticle.id}`, auctionDetails, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      setAuctionModalOpen(false);
-      fetchActiveAuctions(); // Refresh active auctions
-    } catch (error) {
-      console.error("Erreur lors du lancement de l'enchère :", error);
-      alert("Échec du lancement de l'enchère.");
-    }
+  const chartOptions = {
+    responsive: true,
+    plugins: {
+      legend: {
+        display: false,
+      },
+      title: {
+        display: true,
+        text: 'Statistiques des enchères',
+      },
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+      },
+    },
   };
 
   return (
-    <Box sx={{ backgroundColor: grey[100], minHeight: '100vh', padding: '2rem' }}>
-      <Typography variant="h4" color={teal[600]} align="center" gutterBottom>
-        <strong>Gestion des Enchères</strong>
+    <Box sx={{ padding: 2 }}>
+      <Typography
+        variant={isMobile ? 'h5' : 'h4'}
+        gutterBottom
+        sx={{ color: teal[600], textAlign: 'center' }}
+      >
+        Statistiques des enchères
       </Typography>
 
-      {/* Section : Lancement d'Enchères */}
-      <Typography variant="h5" gutterBottom>Articles Prêts pour Enchères</Typography>
-      <TableContainer component={Paper} sx={{ marginBottom: '2rem' }}>
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell>Titre</TableCell>
-              <TableCell>Catégorie</TableCell>
-              <TableCell>Prix de Départ</TableCell>
-              <TableCell>Actions</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {approvedArticles.map((article) => (
-              <TableRow key={article.id}>
-                <TableCell>{article.name}</TableCell>
-                <TableCell>{article.category}</TableCell>
-                <TableCell>{article.price} GTC</TableCell>
-                <TableCell>
-                  <Button variant="contained" color="primary" onClick={() => openAuctionModal(article)}>
-                    Lancer Enchère
-                  </Button>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
+      <Grid container spacing={2} sx={{ marginBottom: 2 }}>
+        <Grid item xs={12} sm={6} md={4}>
+          <FormControl fullWidth>
+            <InputLabel>Période</InputLabel>
+            <Select
+              value={timeFilter}
+              onChange={(e) => setTimeFilter(e.target.value)}
+            >
+              <MenuItem value="daily">Journalière</MenuItem>
+              <MenuItem value="weekly">Hebdomadaire</MenuItem>
+              <MenuItem value="monthly">Mensuelle</MenuItem>
+              <MenuItem value="yearly">Annuelle</MenuItem>
+            </Select>
+          </FormControl>
+        </Grid>
+      </Grid>
 
-      {/* Section : Enchères Actives */}
-      <Typography variant="h5" gutterBottom>Enchères Actives</Typography>
-      <TableContainer component={Paper} sx={{ marginBottom: '2rem' }}>
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell>Titre</TableCell>
-              <TableCell>Prix Actuel</TableCell>
-              <TableCell>Temps Restant</TableCell>
-              <TableCell>Status</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {activeAuctions.map((auction) => (
-              <TableRow key={auction.id}>
-                <TableCell>{auction.articleName}</TableCell>
-                <TableCell>{auction.currentPrice} GTC</TableCell>
-                <TableCell>{auction.remainingTime}</TableCell>
-                <TableCell>
-                  <Chip label="En Cours" color="primary" />
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
+      {loading ? (
+        <Typography align="center">Chargement des données...</Typography>
+      ) : (
+        <>
+          <Grid container spacing={3} sx={{ marginBottom: 4 }}>
+            {/* Enchères Créées */}
+            <Grid item xs={12} sm={6} md={3}>
+              <Paper
+                elevation={3}
+                sx={{
+                  padding: 2,
+                  backgroundColor: blue[100],
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  textAlign: 'center',
+                }}
+              >
+                <DashboardIcon sx={{ fontSize: 40, color: blue[500] }} />
+                <Typography variant="h6" sx={{ marginTop: 1, color: 'black' }}>
+                  {statistics.created || 0}
+                </Typography>
+                <Typography sx={{ color: 'black' }}>Enchères Créées</Typography>
+              </Paper>
+            </Grid>
 
-      {/* Section : Historique des Enchères */}
-      <Typography variant="h5" gutterBottom>Historique des Enchères</Typography>
-      <TableContainer component={Paper}>
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell>Titre</TableCell>
-              <TableCell>Prix Final</TableCell>
-              <TableCell>Date de Clôture</TableCell>
-              <TableCell>Gagnant</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {auctionHistory.map((history) => (
-              <TableRow key={history.id}>
-                <TableCell>{history.articleName}</TableCell>
-                <TableCell>{history.finalPrice} GTC</TableCell>
-                <TableCell>{history.endDate}</TableCell>
-                <TableCell>{history.winner}</TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
+            {/* Enchères Annulées */}
+            <Grid item xs={12} sm={6} md={3}>
+              <Paper
+                elevation={3}
+                sx={{
+                  padding: 2,
+                  backgroundColor: red[100],
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  textAlign: 'center',
+                }}
+              >
+                <CancelIcon sx={{ fontSize: 40, color: red[500] }} />
+                <Typography variant="h6" sx={{ marginTop: 1, color: 'black' }}>
+                  {statistics.cancelled || 0}
+                </Typography>
+                <Typography sx={{ color: 'black' }}>Enchères Annulées</Typography>
+              </Paper>
+            </Grid>
 
-      {/* Modale pour lancer une enchère */}
-      <Modal open={isAuctionModalOpen} onClose={() => setAuctionModalOpen(false)}>
-        <Box sx={{
-          position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
-          width: 400, bgcolor: 'background.paper', p: 3, boxShadow: 24, borderRadius: 2,
-        }}>
-          <Typography variant="h6" align="center" gutterBottom>Lancer une Enchère</Typography>
-          <TextField
-            label="Durée de l'Enchère (en heures)"
-            type="number"
-            fullWidth
-            margin="normal"
-            value={auctionDetails.duration}
-            onChange={(e) => setAuctionDetails({ ...auctionDetails, duration: e.target.value })}
-          />
-          <TextField
-            label="Augmentation Minimum"
-            type="number"
-            fullWidth
-            margin="normal"
-            value={auctionDetails.minIncrement}
-            onChange={(e) => setAuctionDetails({ ...auctionDetails, minIncrement: e.target.value })}
-          />
-          <TextField
-            label="Prix de Départ"
-            type="number"
-            fullWidth
-            margin="normal"
-            value={auctionDetails.startingPrice}
-            onChange={(e) => setAuctionDetails({ ...auctionDetails, startingPrice: e.target.value })}
-          />
-          <Box display="flex" justifyContent="space-between" mt={2}>
-            <Button variant="contained" color="primary" onClick={handleAuctionSubmit}>Confirmer</Button>
-            <Button variant="outlined" onClick={() => setAuctionModalOpen(false)}>Annuler</Button>
-          </Box>
-        </Box>
-      </Modal>
+            {/* Enchères en cours */}
+            <Grid item xs={12} sm={6} md={3}>
+              <Paper
+                elevation={3}
+                sx={{
+                  padding: 2,
+                  backgroundColor: amber[100],
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  textAlign: 'center',
+                }}
+              >
+                <QueryBuilderIcon sx={{ fontSize: 40, color: amber[500] }} />
+                <Typography variant="h6" sx={{ marginTop: 1, color: 'black' }}>
+                  {statistics.ongoing || 0}
+                </Typography>
+                <Typography sx={{ color: 'black' }}>Enchères en Cours</Typography>
+              </Paper>
+            </Grid>
+
+            {/* Enchères Stoppées */}
+            <Grid item xs={12} sm={6} md={3}>
+              <Paper
+                elevation={3}
+                sx={{
+                  padding: 2,
+                  backgroundColor: teal[100],
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  textAlign: 'center',
+                }}
+              >
+                <StopCircleIcon sx={{ fontSize: 40, color: teal[500] }} />
+                <Typography variant="h6" sx={{ marginTop: 1, color: 'black' }}>
+                  {statistics.stopped || 0}
+                </Typography>
+                <Typography sx={{ color: 'black' }}>Enchères Stoppées</Typography>
+              </Paper>
+            </Grid>
+          </Grid>
+
+          {/* Graphique */}
+          {!isMobile && (
+            <Box sx={{ maxWidth: '100%', margin: 'auto' }}>
+              <Typography
+                variant="h5"
+                align="center"
+                gutterBottom
+                sx={{ color: teal[600] }}
+              >
+                Graphique des Statistiques
+              </Typography>
+              <Bar data={chartData} options={chartOptions} />
+            </Box>
+          )}
+        </>
+      )}
     </Box>
   );
 };
 
-export default SellerAuctions;
+export default SellerDashboardStatistics;

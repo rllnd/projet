@@ -1,15 +1,28 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/db'); // Connexion Sequelize
 const User = require('./User');
-
+const Category = require('./Category');
 const Article = sequelize.define('Article', {
   name: {
     type: DataTypes.STRING,
     allowNull: false,
   },
-  category: {
-    type: DataTypes.STRING,
+  startPrice: {
+    type: DataTypes.FLOAT,
     allowNull: false,
+    defaultValue: 0, // Par défaut, 0 si non spécifié
+  },
+  isSold: {
+    type: DataTypes.BOOLEAN,
+    allowNull: false,
+    defaultValue: false,
+  },
+  categoryId: {
+    type: DataTypes.INTEGER,
+    references: {
+      model: Category,
+      key: 'id',
+    },
   },
   price: {
     type: DataTypes.FLOAT,
@@ -65,13 +78,22 @@ const Article = sequelize.define('Article', {
     defaultValue: 0,
     allowNull: false,
   },
+    isRejected: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false, // Par défaut, non rejeté
+    },
+    rejectReason: {
+      type: DataTypes.TEXT,
+      allowNull: true, // La raison peut être nulle si non rejeté
+    },
  
   isPublished: {
     type: DataTypes.BOOLEAN,
     allowNull: false,
     defaultValue: false,
   },
-}, {
+},
+ {
   tableName: 'articles',
   timestamps: true, // Inclut createdAt et updatedAt
 });

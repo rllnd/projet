@@ -1,50 +1,171 @@
-/* client/src/styles/ArticleDetail.css */
 .bid-form {
-    background: #fff;
-    padding: 1px;
-    border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  }
+  background: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  width: 100%; /* Ajuste à la largeur disponible */
+
+}
+
+.bid-options {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.bid-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.bid-input {
+  flex: 1;
+  padding: 10px 15px;
+  border-radius: 5px;
+  border: 1px solid #ddd;
+  font-size: 1rem;
+}
+
+.bid-btn {
+  padding: 10px 15px;
+  border-radius: 5px;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  border: none;
+}
+
+.manual-bid-btn {
+  background-color: #1c2b4a;
+  color: #fff;
+  transition: background-color 0.3s;
+}
+
+.manual-bid-btn:hover {
+  background-color: #333;
+}
+
+.auto-bid-btn {
+  background-color: #ff7a45;
+  color: #fff;
+  transition: background-color 0.3s;
+}
+
+.auto-bid-btn:hover {
+  background-color: #ff5722;
+}
+
+.bid-form h3 {
+  font-weight: bold;
   
+}
+/* Style mobile */
+@media (max-width: 768px) {
+  .bid-form {
+    margin-top: 20px; /* Espace au-dessus pour éviter un chevauchement */
+  }
+}
+/* Styles généraux */
+.bid-form {
+  background: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  width: 100%; /* Ajuste à la largeur disponible */
+}
+
+.bid-options {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.bid-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.bid-input {
+  flex: 1;
+  padding: 10px 15px;
+  border-radius: 5px;
+  border: 1px solid #ddd;
+  font-size: 1rem;
+}
+
+.bid-btn {
+  padding: 10px 15px;
+  border-radius: 5px;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  border: none;
+}
+
+.manual-bid-btn {
+  background-color: #1c2b4a;
+  color: #fff;
+  transition: background-color 0.3s;
+}
+
+.manual-bid-btn:hover {
+  background-color: #333;
+}
+
+.auto-bid-btn {
+  background-color: #ff7a45;
+  color: #fff;
+  transition: background-color 0.3s;
+}
+
+.auto-bid-btn:hover {
+  background-color: #ff5722;
+}
+
+/* Responsivité : Écrans entre 768px et 1000px */
+@media (max-width: 1000px) and (min-width: 768px) {
   .bid-options {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
+    flex-direction: column; /* Empile les options verticalement */
+    gap: 20px;
   }
-  
+
   .bid-option {
-    display: flex;
-    gap: 10px;
+    flex-direction: column; /* Les champs de saisie et boutons s'empilent */
+    align-items: stretch; /* Les éléments prennent toute la largeur */
   }
-  
+
   .bid-input {
-    flex: 1;
-    padding: 8px;
-    border-radius: 5px;
-    border: 1px solid #ddd;
+    width: 100%; /* Champs de saisie à pleine largeur */
   }
-  
+
   .bid-btn {
-    padding: 8px 12px;
-    border-radius: 5px;
-    cursor: pointer;
-    border: none;
-    font-size: 0.9rem;
+    width: 100%; /* Boutons à pleine largeur */
   }
-  
-  .manual-bid-btn {
-    background-color: #1c2b4a;
-    color: #fff;
+}
+
+/* Responsivité : Écrans inférieurs à 768px */
+@media (max-width: 768px) {
+  .bid-form {
+    margin-top: 20px;
   }
-  
-  .auto-bid-btn {
-    background-color: #ff7a45;
-    color: #fff;
+
+  .bid-options {
+    flex-direction: column;
+    gap: 15px;
   }
-  
-  .tokens, .user-tokens {
-    margin-top: 10px;
-    font-size: 0.9rem;
-    color: #666;
+
+  .bid-option {
+    flex-direction: column;
+    align-items: stretch;
   }
-  
+
+  .bid-btn {
+    width: 100%;
+  }
+
+  .bid-input {
+    width: 100%;
+  }
+}

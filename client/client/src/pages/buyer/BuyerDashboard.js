@@ -20,10 +20,12 @@ import { useAuth } from '../../contexts/AuthContext';
 import { Badge } from '@mui/material'; // Importer Badge
 import { Link } from 'react-router-dom';
 
+import BuyerDeliveries from './BuyerDeliveries';
 import NotificationBadge from './NotificationBadge';
 import EncheresEnCours from './EncheresEnCours';
 import EncheresGagnees from './EncheresGagnees';
-import EncheresPlacees from './EncheresPlacees';
+import EncheresPerdues from './EncheresPerdues';
+import Encheresannulees from './Encheresannulees';
 import HistoriqueEncheres from './HistoriqueEncheres';
 import HistoriqueTransactions from './HistoriqueTransactions';
 import SoldeCompte from './SoldeCompte';
@@ -32,6 +34,7 @@ import ParametresCompte from './ParametresCompte';
 import NotificationsPage from './NotificationPage';
 import TauxConversion from './TauxConversion';
 import Overview from './Overview';
+
 
 import { AppProvider } from '@toolpad/core/AppProvider';
 import { DashboardLayout } from '@toolpad/core/DashboardLayout';
@@ -51,8 +54,14 @@ const NAVIGATION = [
   { kind: 'header', title: 'Enchères' },
   { segment: 'encheres-encours', title: 'Enchères en Cours', icon: <GavelIcon sx={{ color: teal[700] }} /> },
   { segment: 'encheres-gagnees', title: 'Enchères Gagnées', icon: <AssignmentTurnedInIcon sx={{ color: teal[700] }} /> },
-  { segment: 'encheres-placees', title: 'Enchères Placées', icon: <GavelIcon sx={{ color: teal[700] }} /> },
+  { segment: 'encheres-perdues', title: 'Enchères Perdues', icon: <GavelIcon sx={{ color: teal[700] }} /> },
+  { segment: 'encheres-annulees', title: 'Enchères Annulées', icon: <GavelIcon sx={{ color: teal[700] }} /> },
+  
   { segment: 'historique-encheres', title: 'Historique des Enchères', icon: <HistoryIcon sx={{ color: teal[700] }} /> },
+  
+  { kind: 'header', title: 'Mes Achats' },
+  { segment: 'mes-achats', title: 'Mes Achats', icon: <ShoppingCartIcon sx={{ color: teal[700] }} /> },
+
 
   { kind: 'header', title: 'Transactions' },
   { segment: 'historique-transactions', title: 'Historique des Transactions', icon: <HistoryIcon sx={{ color: teal[700] }} /> },
@@ -77,10 +86,14 @@ function DemoPageContent({ pathname }) {
       return <EncheresEnCours />;
     case '/encheres-gagnees':
       return <EncheresGagnees />;
-    case '/encheres-placees':
-      return <EncheresPlacees />;
+    case '/encheres-perdues':
+      return <EncheresPerdues />;
+      case '/encheres-annulees':
+      return <Encheresannulees />;
     case '/historique-encheres':
       return <HistoriqueEncheres />;
+    case '/mes-achats':
+      return <BuyerDeliveries />;
     case '/historique-transactions':
       return <HistoriqueTransactions />;
     case '/solde-compte':
@@ -97,9 +110,7 @@ function DemoPageContent({ pathname }) {
       return (
         <Box sx={{ py: 4, textAlign: 'center' }}>
           <Typography variant="h5">Bienvenue dans le Tableau de Bord Acheteur</Typography>
-          <Typography variant="body1" color="textSecondary">
-            Sélectionnez une section pour voir les détails.
-          </Typography>
+        
           <Overview />
         </Box>
       );
