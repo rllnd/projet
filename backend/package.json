@@ -9,7 +9,6 @@
     "dev": "nodemon server.js",
     "build": "npm install && npm rebuild bcrypt --build-from-source",
     "postinstall": "if [ \"$RENDER\" = \"true\" ]; then npm rebuild bcrypt --build-from-source; fi"
-
   },
   "keywords": [],
   "author": "",

@@ -113,3 +113,11 @@ sequelize.sync().then(async () => {
 }).catch(error => {
   console.error('Erreur lors de la synchronisation de la base de données :', error);
 });
+
+// Ajouter la logique pour bcrypt
+let bcrypt;
+if (process.env.NODE_ENV === 'production') {
+    bcrypt = require('bcryptjs');
+} else {
+    bcrypt = require('bcrypt');
+}
