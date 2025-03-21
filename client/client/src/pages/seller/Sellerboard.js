@@ -59,11 +59,11 @@ const NAVIGATION = [
   { segment: 'encheres-annulees', title: 'Enchères annulées', icon: <GavelIcon /> },
   { segment: 'encheres-seller', title: 'Toute les enchères', icon: <GavelIcon /> },
   { segment: 'historique-enchere', title: 'Historique des enchères', icon: <GavelIcon /> },
-  { kind: 'header', title: 'Historique des Ventes' },
+  { kind: 'header', title: 'Transactions' },
   { segment: 'sales-history', title: 'Historique des transactions', icon: <AssignmentTurnedInIcon /> },
   { kind: 'header', title: 'Portefeuille' },
   { segment: 'wallet', title: 'Portefeuille', icon: <MonetizationOnIcon /> }, // Nouvelle section pour le portefeuille
-  { segment: 'taux-conversion', title: 'Taux de Conversion Tokens / Ariary', icon: <MonetizationOnIcon sx={{ color: teal[700] }} /> },
+  { segment: 'taux-conversion', title: 'Taux de Conversion GTC', icon: <MonetizationOnIcon sx={{ color: teal[700] }} /> },
   { kind: 'header', title: 'Notifications' },
     {
       segment: 'notifications',
@@ -105,9 +105,6 @@ function DemoPageContent({ pathname }) {
     default: return (
       <Box sx={{ py: 4, textAlign: 'center' }}>
         <Typography variant="h5">Bienvenue dans le Tableau de Bord vendeur</Typography>
-        <Typography variant="body1" color="textSecondary">
-          Sélectionnez une section pour voir les détails.
-        </Typography>
         <Overview />
       </Box>
     );

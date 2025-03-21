@@ -103,14 +103,13 @@ const NAVIGATION = [
   { segment: 'auctions/history', title: 'Historique des Enchères', icon: <TimelineOutlinedIcon /> },
   { segment: 'auctions/stop', title: 'Arrêt des Enchères', icon: <PanToolOutlinedIcon /> },
   { segment: 'auctions/automatic-bidding', title: 'Enchères Automatiques', icon: <GavelIcon /> },
-  { segment: 'auctions/categories', title: 'Catégories d’Enchères', icon: <TrendingDownOutlinedIcon /> },
  
   { segment: 'auctions/settings', title: 'Paramètres des Enchères', icon: <SettingsIcon /> },
   
   { kind: 'header', title: 'Gestion des Articles' },
   
   { segment: 'validateitems', title: 'Valider les articles', icon: <AssignmentTurnedInIcon /> },
-
+  { segment: 'auctions/categories', title: 'Catégories des articles', icon: <TrendingDownOutlinedIcon /> },
 
 
   { kind: 'header', title: 'Gestion des Transactions' },

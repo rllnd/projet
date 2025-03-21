@@ -66,6 +66,12 @@ const AdminDeliveryList = () => {
     delivered: green[500], // Livré
   };
 
+  const statusLabels = {
+    pending: "En attente",
+    shipped: "Expédié",
+    delivered: "Livré",
+};
+
   // 📌 Colonnes pour écrans larges
   const allColumns = [
     {
@@ -91,11 +97,12 @@ const AdminDeliveryList = () => {
       dataIndex: 'status',
       key: 'status',
       render: (status) => (
-        <Tag color={statusColors[status] || red[500]}>
-          {status.toUpperCase()}
-        </Tag>
+          <Tag color={statusColors[status] || red[500]}>
+              {statusLabels[status] || 'Non spécifié'}
+          </Tag>
       ),
-    },
+  },
+
     {
       title: 'Actions',
       key: 'actions',

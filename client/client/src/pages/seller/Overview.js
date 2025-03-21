@@ -66,17 +66,7 @@ const Overview = () => {
           </Card>
         </Grid>
 
-        {/* Créer Articles */}
-        <Grid item xs={12} sm={6} md={4}>
-          <Card sx={{ borderRadius: 2, boxShadow: 2, backgroundColor: green[50], height: '100%' }}>
-            <CardContent sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-              <Avatar sx={{ bgcolor: green[500], mb: 2 }}>
-                <CreateIcon />
-              </Avatar>
-              <Typography variant="subtitle1" sx={{ fontWeight: 'bold', textAlign: 'center' }}>Créer Articles</Typography>
-            </CardContent>
-          </Card>
-        </Grid>
+        
 
         {/* Mes Enchères Arrêtées */}
         <Grid item xs={12} sm={6} md={4}>

@@ -247,6 +247,7 @@ exports.purchaseGTC = async (req, res) => {
         transactionId: paymentResponse.transactionId,
         success: true,
         userId: req.user.id,
+        status:'completed'
       },
       { transaction }
     );
@@ -439,6 +440,7 @@ if (platform.maxSaleLimit && amount > platform.maxSaleLimit) {
       description: `Vente de ${amount} GTC via ${operator}`,
       transactionId: paymentResponse.transactionId,  // ID de la transaction obtenue du paiement
       success: true,
+      status:'completed',
       userId: req.user.id,
     }, { transaction });
 
@@ -467,7 +469,8 @@ if (platform.maxSaleLimit && amount > platform.maxSaleLimit) {
 
 
 
-  
+/*kianchau.ns.cloudflare.com
+kia.ns.cloudflare.com/*/
 
 
 
